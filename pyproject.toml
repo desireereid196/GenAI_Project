@@ -1,0 +1,59 @@
+[project]
+name = "vtt"
+version = "0.1.0"
+description = "VTT (Vision-to-Text): An Image Captioning System"
+authors = [
+    {name="Curtis Neiderer", email="neiderer.c@northeastern.edu" },
+    {name="Divya Maheshkumar", email="maheshkumar.d@northeastern.edu" },
+    {name="Desiree Reed", email="reed.des@northeastern.edu" },
+    {name="Minal Ahir", email="ahir.m@northeastern.edu" },
+    {name="Arundhati Ubhad", email="ubhad.a@northeastern.edu"}
+]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9,<3.12"
+keywords = [
+    "vision-to-text",
+    "image-captioning", 
+    "image-to-text", 
+    "caption generator", 
+    "multimodal",
+    "ResNet", 
+    "LSTM",
+    "Flickr8k", 
+    "Flickr30k"
+]
+
+dependencies = [
+    "tensorflow>=2.18",
+    "transformers==4.38.2",
+    "scikit-learn>=1.2",
+    "pandas>=1.5",
+    "numpy>=1.24",
+    "matplotlib>=3.6",
+    "seaborn>=0.12",
+    "jupyterlab>=3.5",
+    "scipy>=1.10",
+    "tqdm>=4.65",
+    "pyyaml>=6.0",
+    "accelerate==0.27.2"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+    "flake8",
+    "pytest",
+    "jupyter",
+    "pipreqs",
+    "pipreqsnb"
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# Find packages within the 'src' directory
+[tool.setuptools.packages.find]
+where = ["src"] # Look for packages in the 'src' directory
