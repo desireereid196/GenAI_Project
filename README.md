@@ -53,25 +53,25 @@ GenAI_Project/
 └── src/                              # Contains the core source code.
     └── vtt/                          # The main package for the project.
         ├── __init__.py               #
-        ├── config.py                 # Configuration file for project.
+        ├── config.py                 # Project configuration and dependencies.
         ├── utils.py                  # Shared helper and utility functions.
-        ├── captions/                 #
+        ├── data/                     #
             ├── __init__.py           #
-            ├── cleaning.py           # Load and clean captions.
-            ├── vocabulary.py         # Count word frequencies and filter captions.
-            ├── tokenization.py       # Fit tokenizer, convert captions to sequences, etc.
-            ├── padding.py            # Pad caption sequences.
-            └── io.py                 # Save and load padded sequences.
-        └── features/                 #
+            ├── preprocessing.py      # Caption clearning/tokenization
+            ├── features.py           # Image feature extraction
+            └── dataset.py            # tf.data.Dataset loaders
+        ├── evaluation/               #
             ├── __init__.py           #
-            ├── preprocessing.py      # Image preprocessing.
-            ├── extractor.py          # ResNet feature extraction.
-            └── batch_runner.py       # Batch processing and saving.
+            ├── evaluation.py         # Caption evaluation logic.
+            └── metrics.py            # BLEU, METEOR, ROUGE, BERTScore, CLIPScore, etc.
         ├── models/                   #
             ├── __init__.py           #
-            ├── architecture.py       # Model building.
-            ├── data_loader.py        # Data pipeline setup.
-            └── trainer.py            # Training orchestration.
+            ├── architecture.py       # Build caption model.
+            └── train.py              # Training logic.       
+        └── inference/                #
+            ├── __init__.py           #
+            └── predict.py            # Caption generation from trained model.
+        
 
 ```
 
