@@ -30,12 +30,49 @@ This project supports both the **[Flickr8k](https://www.kaggle.com/datasets/adit
 GenAI_Project/
 ├── LICENSE                           # MIT License.
 ├── README.md                         # Repository overview and setup.
-├── pyproject.toml                    # Project configuration.
-├── documents/                        # Documentation, architecture, research notes.
-├── notebooks/                        # Experiment notebooks.
+├── pyproject.toml                    # Project configuration file.
+├── archive                           # Old stuff.
+├── data/                             # 
+    ├── raw/                          # Raw data
+    └── processed/                    # Cleaned and processed data; tokenizers.
+├── documents/                        # Project milestones, research notes, etc.
 ├── figures/                          # Performance plots.
+├── models/                           # Trained models.
+├── notebooks/                        # Development and experiment notebooks.
+    ├── experiment_1.ipynb            # Baseline Training and Evaluation. (Research Question 1) 
+    ├── experiment_2.ipynb            # Error Analysis. (Research Questions 2 and 4)
+    ├── experiment_3.ipynb            # Semantic Fidelity Comparison. (Research Question 3)
+    └── experiment_4.ipynb            # Generalization. (Research Question 1)
+├── outputs/                          # Model runner outputs needed for Milestone 3.
+├── scripts/                          # 
+    ├── data_runner.py                # Data pipeline script needed for Milestone 2.
+    ├── model_runner.py               # Model pipeline script needed for Milestone 3.
+    ├── train_model.py                # Model training script.
+    ├── preprocess_captions.py        # Caption preprocessing script.
+    └── extract_features.py           # Feature extraction script.
 └── src/                              # Contains the core source code.
     └── vtt/                          # The main package for the project.
+        ├── __init__.py               #
+        ├── config.py                 # Configuration file for project.
+        ├── utils.py                  # Shared helper and utility functions.
+        ├── captions/                 #
+            ├── __init__.py           #
+            ├── cleaning.py           # Load and clean captions.
+            ├── vocabulary.py         # Count word frequencies and filter captions.
+            ├── tokenization.py       # Fit tokenizer, convert captions to sequences, etc.
+            ├── padding.py            # Pad caption sequences.
+            └── io.py                 # Save and load padded sequences.
+        └── features/                 #
+            ├── __init__.py           #
+            ├── preprocessing.py      # Image preprocessing.
+            ├── extractor.py          # ResNet feature extraction.
+            └── batch_runner.py       # Batch processing and saving.
+        ├── models/                   #
+            ├── __init__.py           #
+            ├── architecture.py       # Model building.
+            ├── data_loader.py        # Data pipeline setup.
+            └── trainer.py            # Training orchestration.
+
 ```
 
 ## 🛠 Setup
