@@ -82,14 +82,7 @@ git clone https://github.com/<your-username>/GenAi_Project.git
 cd GenAI_Project
 ```
 
-### 2. Install Git LFS 
-
-Install Git large file storage so large files (i.e., `NPZ` data files) are stored as pointers and not full file objects in the repository.
-```bash
-git lfs install
-```
-
-### 3. Create a Virtual Environment 
+### 2. Create a Virtual Environment 
 
 We recommend using Python 3.10+ with TensorFlow 2.9+ support.
 
@@ -98,7 +91,7 @@ conda create -n genai_project python=3.10
 conda activate genai_project
 ```
 
-### 4. Install the Package and Dependencies
+### 3. Install the Package and Dependencies
 
 Install the `vtt` package in editable (`-e`) mode so you can make changes to the source code and test them without reinstalling.
 
@@ -109,7 +102,7 @@ pip install -e .
 
 This installs the package locally while keeping it linked to the source code.
 
-### 5. Verify the Installation
+### 4. Verify the Installation
 
 Verify that the `vtt` package was installed and is importable.
 
@@ -117,16 +110,6 @@ Verify that the `vtt` package was installed and is importable.
 # Ensure your virtual environment is active
 python -c "import vtt; print('vtt imported successfully')"
 ```
-
-### 6. Install the Pre-Commit Hooks
-
-This command sets up the necessary Git hooks (like pre-commit, pre-push, etc.) in the .git/hooks/ directory of your local clone, pointing them to the pre-commit framework.
-
-```bash
-pre-commit install
-```
-
-Important Note: Collaborators only need to run pre-commit install once per local clone of the repository.
 
 ## 📄 License
 MIT License — feel free to use, share, and modify.
