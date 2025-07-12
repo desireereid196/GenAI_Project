@@ -28,49 +28,47 @@ This project supports both the **[Flickr8k](https://www.kaggle.com/datasets/adit
 
 ```bash
 GenAI_Project/
-├── LICENSE                           # MIT License.
-├── README.md                         # Repository overview and setup.
-├── pyproject.toml                    # Project configuration file.
-├── archive                           # Old stuff.
-├── data/                             # 
-    ├── raw/                          # Raw data
-    └── processed/                    # Cleaned and processed data; tokenizers.
-├── documents/                        # Project milestones, research notes, etc.
-├── figures/                          # Performance plots.
-├── models/                           # Trained models.
-├── notebooks/                        # Development and experiment notebooks.
-    ├── experiment_1.ipynb            # Baseline Training and Evaluation. (Research Question 1) 
-    ├── experiment_2.ipynb            # Error Analysis. (Research Questions 2 and 4)
-    ├── experiment_3.ipynb            # Semantic Fidelity Comparison. (Research Question 3)
-    └── experiment_4.ipynb            # Generalization. (Research Question 1)
-├── outputs/                          # Model runner outputs needed for Milestone 3.
-├── scripts/                          # 
-    ├── data_runner.py                # Data pipeline script needed for Milestone 2.
-    ├── model_runner.py               # Model pipeline script needed for Milestone 3.
-    ├── train_model.py                # Model training script.
-    ├── preprocess_captions.py        # Caption preprocessing script.
-    └── extract_features.py           # Feature extraction script.
-└── src/                              # Contains the core source code.
-    └── vtt/                          # The main package for the project.
-        ├── __init__.py               #
-        ├── config.py                 # Project configuration and dependencies.
-        ├── utils.py                  # Shared helper and utility functions.
-        ├── data/                     #
-            ├── __init__.py           #
-            ├── preprocessing.py      # Caption clearning/tokenization
-            ├── features.py           # Image feature extraction
-            └── dataset.py            # tf.data.Dataset loaders
-        ├── evaluation/               #
-            ├── __init__.py           #
-            ├── evaluation.py         # Caption evaluation logic.
-            └── metrics.py            # BLEU, METEOR, ROUGE, BERTScore, CLIPScore, etc.
-        ├── models/                   #
-            ├── __init__.py           #
-            ├── architecture.py       # Build caption model.
-            └── train.py              # Training logic.       
-        └── inference/                #
-            ├── __init__.py           #
-            └── predict.py            # Caption generation from trained model.
+├── LICENSE                               # MIT License.
+├── README.md                             # Repository overview and setup.
+├── pyproject.toml                        # Project configuration file.
+├── archive                               # Old stuff.
+├── data/                                 # 
+    ├── raw/                              # Raw data.
+    └── processed/                        # Cleaned and processed data; tokenizers.
+├── documents/                            # Project milestones, research notes, etc.
+├── figures/                              # Performance plots.
+├── models/                               # Trained models.
+├── notebooks/                            # Development and experiment notebooks.
+    ├── experiment_1.ipynb                # Baseline Training and Evaluation. 
+    ├── experiment_2.ipynb                # Error Analysis. 
+    ├── experiment_3.ipynb                # Semantic Fidelity Comparison. 
+    └── experiment_4.ipynb                # Generalization. 
+├── outputs/                              # Model runner outputs needed for Milestone 3.
+├── scripts/                              # 
+    ├── data_runner.py                    # Data pipeline script needed for Milestone 2.
+    ├── model_runner.py                   # Model pipeline script needed for Milestone 3.
+    ├── train_model.py                    # Model training script.
+    ├── preprocess_captions.py            # Caption preprocessing script.
+    └── extract_features.py               # Feature extraction script.
+└── src/                                  # Contains the core source code.
+    └── vtt/                              # The main package for the project.
+        ├── __init__.py                   #
+        ├── config.py                     # Project configuration and dependencies.
+        ├── utils.py                      # Shared helper and utility functions.
+        ├── data/                         #
+            ├── __init__.py               #
+            ├── caption_preprocessing.py  # Caption cleaning/tokenization.
+            ├── image_preprocessing.py    # Image feature extraction.
+            └── data_loader.py            # tf.data.Dataset loaders.
+        ├── evaluation/                   #
+            ├── __init__.py               #
+            ├── evaluation.py             # Caption evaluation logic.
+            └── metrics.py                # BLEU, METEOR, ROUGE, BERTScore, CLIPScore, etc.
+        ├── models/                       #
+            ├── __init__.py               #
+            ├── architecture.py           # Model architecture definitions.
+            ├── train.py                  # Model training logic.       
+            └── predict.py                # Caption generation from trained model.
         
 
 ```
