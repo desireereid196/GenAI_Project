@@ -69,8 +69,6 @@ GenAI_Project/
             ├── architecture.py           # Model architecture definitions.
             ├── train.py                  # Model training logic.       
             └── predict.py                # Caption generation from trained model.
-        
-
 ```
 
 ## 🛠 Setup
