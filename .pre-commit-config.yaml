@@ -1,0 +1,23 @@
+# .pre-commit-config.yaml
+repos:
+  # Hook to check if Git LFS itself is installed
+  - repo: local
+    hooks:
+      - id: check-git-lfs-installed
+        name: Check Git LFS Installation
+        entry: bash -c "command -v git-lfs >/dev/null 2>&1 || { echo >&2 'Error: Git LFS is not installed. Please install it from https://git-lfs.com/'; exit 1; }"
+        language: system
+        always_run: true          # This hook should always run, even if no files change
+        pass_filenames: false     # This hook doesn't operate on specific files
+        stages: [commit]          # Run before every commit
+
+  # Hook to enforce LFS tracking for newly added large files
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0 # Use a specific version (check pre-commit-hooks releases for the latest stable)
+    hooks:
+      - id: check-added-large-files
+        name: Prevent large files not tracked by LFS
+        args: [--maxkb=500] # Set your desired max file size in KB.
+                            # Files larger than this will trigger the hook if not LFS tracked.
+                            # Adjust this value based on your project's needs.
+                            # Common values might be 100 (0.1MB) to 1024 (1MB) or more.
