@@ -83,14 +83,15 @@ git clone https://github.com/<your-username>/GenAi_Project.git
 cd GenAI_Project
 ```
 
-### 2. Install Git LFS 
+### 2. Install Git LFS
 
 Install Git large file storage so large files (i.e., `NPZ` data files) are stored as pointers and not full file objects in the repository.
+
 ```bash
 git lfs install
 ```
 
-### 3. Create a Virtual Environment 
+### 3. Create a Virtual Environment
 
 We recommend using Python 3.10+ with TensorFlow 2.9+ support.
 
