@@ -36,13 +36,14 @@ GenAI_Project/
     ├── raw/                              # Raw data.
     └── processed/                        # Cleaned and processed data; tokenizers.
 ├── documents/                            # Project milestones, research notes, etc.
-├── figures/                              # Performance plots.
-├── models/                               # Trained models.
-├── notebooks/                            # Development and experiment notebooks.
+├── experiments/                          # Development and experiment notebooks.
     ├── experiment_1.ipynb                # Baseline Training and Evaluation. 
     ├── experiment_2.ipynb                # Error Analysis. 
     ├── experiment_3.ipynb                # Semantic Fidelity Comparison. 
     └── experiment_4.ipynb                # Generalization. 
+├── figures/                              # Figures for the report and presentation.
+├── models/                               # Trained models.
+├── notebooks/                            # Development and proof-of-concept notebooks.
 ├── outputs/                              # Model runner outputs needed for Milestone 3.
 ├── scripts/                              # 
     ├── data_runner.py                    # Data pipeline script needed for Milestone 2.

@@ -3,9 +3,6 @@
 __version__ = "0.1.0" # Or whatever your current version is
 
 # Make key components directly accessible
-from .captioner import ImageCaptioner # Assuming you have a main class/function
-from .preprocessing import preprocess_image
-from .metrics import calculate_bleu_score
 
 # Define what 'from vision_to_text import *' would expose
 __all__ = [
