@@ -54,8 +54,6 @@ GenAI_Project/
 └── src/                                  # Contains the core source code.
     └── vtt/                              # The main package for the project.
         ├── __init__.py                   #
-        ├── config.py                     # Project configuration and dependencies.
-        ├── utils.py                      # Shared helper and utility functions.
         ├── data/                         #
             ├── __init__.py               #
             ├── caption_preprocessing.py  # Caption cleaning/tokenization.
@@ -63,13 +61,16 @@ GenAI_Project/
             └── data_loader.py            # tf.data.Dataset loaders.
         ├── evaluation/                   #
             ├── __init__.py               #
-            ├── evaluation.py             # Caption evaluation logic.
-            └── metrics.py                # BLEU, METEOR, ROUGE, BERTScore, CLIPScore, etc.
+            ├── evaluation.py             # Evaluation logic for generated captions.
+            └── metrics.py                # Core metric functions (BLEU, METEOR, BERTScore, etc.)
         ├── models/                       #
             ├── __init__.py               #
             ├── architecture.py           # Model architecture definitions.
             ├── train.py                  # Model training logic.       
             └── predict.py                # Caption generation from trained model.
+        └── utils/                        # 
+            ├── config.py                 # Project configuration and dependencies.
+            └── helpers.py                  # Shared helper and utility functions.
 ```
 
 ## 🛠 Setup

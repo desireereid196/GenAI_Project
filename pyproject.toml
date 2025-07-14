@@ -42,6 +42,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "black",
+    "nbqa",
     "isort",
     "flake8",
     "pytest",
