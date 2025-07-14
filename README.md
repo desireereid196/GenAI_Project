@@ -47,10 +47,7 @@ GenAI_Project/
 ├── outputs/                              # Model runner outputs needed for Milestone 3.
 ├── scripts/                              # 
     ├── data_runner.py                    # Data pipeline script needed for Milestone 2.
-    ├── model_runner.py                   # Model pipeline script needed for Milestone 3.
-    ├── train_model.py                    # Model training script.
-    ├── preprocess_captions.py            # Caption preprocessing script.
-    └── extract_features.py               # Feature extraction script.
+    └── model_runner.py                   # Model pipeline script needed for Milestone 3.
 └── src/                                  # Contains the core source code.
     └── vtt/                              # The main package for the project.
         ├── __init__.py                   #
