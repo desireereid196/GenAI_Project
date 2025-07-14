@@ -5,7 +5,8 @@ repos:
     hooks:
       - id: check-git-lfs-installed
         name: Check Git LFS Installation
-        entry: bash -c "command -v git-lfs >/dev/null 2>&1 || { echo >&2 'Error: Git LFS is not installed. Please install it from https://git-lfs.com/'; exit 1; }"
+        entry: | 
+          bash -c "command -v git-lfs >/dev/null 2>&1 || { echo >&2 'Error: Git LFS is not installed. Please install it from https://git-lfs.com/'; exit 1; }"
         language: system
         always_run: true          # This hook should always run, even if no files change
         pass_filenames: false     # This hook doesn't operate on specific files
@@ -13,7 +14,7 @@ repos:
 
   # Hook to enforce LFS tracking for newly added large files
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0 # Use a specific version (check pre-commit-hooks releases for the latest stable)
+    rev: v5.0.0 # Use a specific version (check pre-commit-hooks releases for the latest stable)
     hooks:
       - id: check-added-large-files
         name: Prevent large files not tracked by LFS
@@ -21,3 +22,21 @@ repos:
                             # Files larger than this will trigger the hook if not LFS tracked.
                             # Adjust this value based on your project's needs.
                             # Common values might be 100 (0.1MB) to 1024 (1MB) or more.
+
+  # Add Black for code formatting
+  - repo: https://github.com/psf/black
+    rev: 25.1.0 # Use a specific stable version (check Black's releases on GitHub for the latest)
+    hooks:
+      - id: black
+        # Optional: You can add args if you want to customize Black's behavior, e.g., line length
+        # args: ["--line-length=88"]
+
+  # Add nbqa black for Notebook formatting
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.9.1 # Use the latest stable version of nbQA (check nbQA-dev/nbQA releases for the latest)
+    hooks:
+      - id: nbqa-black
+        # nbqa hooks automatically target .ipynb files.
+        # You can pass arguments to black via nbqa's --nbqa-args flag if needed.
+        # For example, to set line length for black within notebooks:
+        # args: ["--nbqa-args=--line-length=88"]
