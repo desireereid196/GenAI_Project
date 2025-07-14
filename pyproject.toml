@@ -36,7 +36,9 @@ dependencies = [
     "scipy>=1.10",
     "tqdm>=4.65",
     "pyyaml>=6.0",
-    "accelerate==0.27.2"
+    "accelerate==0.27.2",
+    "bert_score==0.3.12",
+    "nltk==3.9.1"
 ]
 
 [project.optional-dependencies]
