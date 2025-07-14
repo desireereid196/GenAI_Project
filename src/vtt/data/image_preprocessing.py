@@ -12,7 +12,8 @@ from tqdm import tqdm
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing import image
-from vtt.config import IMAGE_SIZE, IMAGENET_MEAN, IMAGENET_STD
+from vtt.utils.config import IMAGE_SIZE, IMAGENET_MEAN, IMAGENET_STD
+
 
 def preprocess_image(img_path: str) -> np.ndarray:
     """Preprocesses a single image for ResNet50 input.
@@ -33,7 +34,10 @@ def preprocess_image(img_path: str) -> np.ndarray:
     x = (x - np.array(IMAGENET_MEAN)) / np.array(IMAGENET_STD)  # Standardize
     return np.expand_dims(x, axis=0)  # Add batch dimension
 
-def extract_features_from_filenames(image_dir: str, image_names: list[str]) -> dict[str, np.ndarray]:
+
+def extract_features_from_filenames(
+    image_dir: str, image_names: list[str]
+) -> dict[str, np.ndarray]:
     """Extracts features from a list of image files using a pre-trained ResNet50 model.
 
     Initializes a ResNet50 model (pre-trained on ImageNet) and extracts features
@@ -71,6 +75,7 @@ def extract_features_from_filenames(image_dir: str, image_names: list[str]) -> d
             print(f"Skipping {name}: {e}")
     return features
 
+
 def save_features(features: dict, output_path: str) -> None:
     """Saves a dictionary of image features to a compressed NumPy .npz file.
 
@@ -84,6 +89,7 @@ def save_features(features: dict, output_path: str) -> None:
         output_path (str): The full path to the output .npz file (e.g., 'features.npz').
     """
     np.savez_compressed(output_path, **features)
+
 
 def load_features(npz_path: str) -> dict[str, np.ndarray]:
     """Loads image features from a compressed NumPy .npz file.
