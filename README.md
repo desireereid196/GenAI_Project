@@ -61,7 +61,7 @@ GenAI_Project/
             └── data_loader.py            # tf.data.Dataset loaders.
         ├── evaluation/                   #
             ├── __init__.py               #
-            ├── evaluation.py             # Evaluation logic for generated captions.
+            ├── evaluate.py               # Evaluation logic for generated captions.
             └── metrics.py                # Core metric functions (BLEU, METEOR, BERTScore, etc.)
         ├── models/                       #
             ├── __init__.py               #
