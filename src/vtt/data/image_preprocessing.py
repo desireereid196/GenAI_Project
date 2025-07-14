@@ -76,6 +76,81 @@ def extract_features_from_filenames(
     return features
 
 
+def extract_features_from_directory(image_dir: str) -> dict[str, np.ndarray]:
+    """
+    Extracts features for all images in a given directory using ResNet50.
+
+    This function automatically identifies all `.jpg`, `.jpeg`, or `.png` images
+    in the directory, preprocesses them, and extracts 2048-dim feature vectors
+    using a pre-trained ResNet50 model (avg_pool layer).
+
+    Args:
+        image_dir (str): Path to the directory containing image files.
+
+    Returns:
+        dict[str, np.ndarray]: Dictionary mapping image filenames to feature vectors.
+    """
+    # Supported image extensions
+    valid_extensions = (".jpg", ".jpeg", ".png")
+
+    # List all valid image files in the directory
+    image_names = [
+        fname
+        for fname in os.listdir(image_dir)
+        if fname.lower().endswith(valid_extensions)
+    ]
+
+    print(f"[INFO] Found {len(image_names)} image(s) in '{image_dir}'.")
+
+    # Use existing function to extract features
+    return extract_features_from_filenames(image_dir, image_names)
+
+
+def extract_features_in_batches(
+    image_dir: str,
+    image_names: list[str],
+    batch_size: int,
+    output_dir: str,
+    prefix: str = "features_batch",
+    skip_existing: bool = True,
+) -> None:
+    """
+    Extracts image features in batches and saves each batch to a separate .npz file.
+
+    This function is useful when processing large datasets, as it allows you
+    to incrementally save progress and recover from errors or interruptions.
+
+    Args:
+        image_dir (str): Directory containing the image files.
+        image_names (list[str]): List of image filenames to process.
+        batch_size (int): Number of images to process in each batch.
+        output_dir (str): Directory to save batch .npz files.
+        prefix (str): Filename prefix for the saved batches.
+        skip_existing (bool): If True, will skip batches that already exist.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    total_batches = np.ceil(len(image_names) / batch_size)
+
+    for i in range(total_batches):
+        batch_start = i * batch_size
+        batch_end = batch_start + batch_size
+        batch_image_names = image_names[batch_start:batch_end]
+
+        batch_filename = f"{prefix}_{i:03d}.npz"
+        batch_path = os.path.join(output_dir, batch_filename)
+
+        if skip_existing and os.path.exists(batch_path):
+            print(f"[INFO] Skipping existing batch: {batch_filename}")
+            continue
+
+        print(
+            f"[INFO] Processing batch {i + 1}/{total_batches} with {len(batch_image_names)} images."
+        )
+        batch_features = extract_features_from_filenames(image_dir, batch_image_names)
+        save_features(batch_features, batch_path)
+        print(f"[INFO] Saved batch to: {batch_path}")
+
+
 def save_features(features: dict, output_path: str) -> None:
     """Saves a dictionary of image features to a compressed NumPy .npz file.
 
