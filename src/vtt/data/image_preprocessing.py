@@ -76,6 +76,109 @@ def extract_features_from_filenames(
     return features
 
 
+def extract_features_from_directory(image_dir: str) -> dict[str, np.ndarray]:
+    """
+    Extracts features for all images in a given directory using ResNet50.
+
+    This function automatically identifies all `.jpg`, `.jpeg`, or `.png` images
+    in the directory, preprocesses them, and extracts 2048-dim feature vectors
+    using a pre-trained ResNet50 model (avg_pool layer).
+
+    Args:
+        image_dir (str): Path to the directory containing image files.
+
+    Returns:
+        dict[str, np.ndarray]: Dictionary mapping image filenames to feature vectors.
+    """
+    # Supported image extensions
+    valid_extensions = (".jpg", ".jpeg", ".png")
+
+    # List all valid image files in the directory
+    image_names = [
+        fname
+        for fname in os.listdir(image_dir)
+        if fname.lower().endswith(valid_extensions)
+    ]
+
+    print(f"[INFO] Found {len(image_names)} image(s) in '{image_dir}'.")
+
+    # Use existing function to extract features
+    return extract_features_from_filenames(image_dir, image_names)
+
+
+def extract_features_in_batches(
+    image_dir: str,
+    batch_size: int,
+    output_dir: str,
+    prefix: str = "features_batch",
+    skip_existing: bool = True,
+) -> None:
+    """
+    Extracts image features in batches and saves each batch to a separate .npz file.
+
+    This function is useful when processing large datasets, as it allows you
+    to incrementally save progress and recover from errors or interruptions.
+
+    Args:
+        image_dir (str): Directory containing the image files.
+        batch_size (int): Number of images to process in each batch.
+        output_dir (str): Directory to save batch .npz files.
+        prefix (str): Filename prefix for the saved batches.
+        skip_existing (bool): If True, will skip batches that already exist.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    image_names = sorted(os.listdir(image_dir))
+    total_images = len(image_names)
+    total_batches = int(np.ceil(total_images / batch_size))
+
+    for batch_idx in tqdm(range(total_batches), desc="Processing batches"):
+        batch_start = batch_idx * batch_size
+        batch_end = min(batch_start + batch_size, total_images)
+        batch_image_names = image_names[batch_start:batch_end]
+
+        batch_filename = f"{prefix}_{batch_idx:03d}.npz"
+        batch_path = os.path.join(output_dir, batch_filename)
+
+        if skip_existing and os.path.exists(batch_path):
+            tqdm.write(f"[INFO] Skipping existing batch: {batch_filename}")
+            continue
+
+        tqdm.write(
+            f"[INFO] Processing batch {batch_idx + 1} of {total_batches} ({len(batch_image_names)} images)"
+        )
+
+        batch_features = extract_features_from_filenames(image_dir, batch_image_names)
+        save_features(batch_features, batch_path)
+
+        tqdm.write(f"[INFO] Saved batch to: {batch_path}")
+
+
+def combine_feature_batches(batch_dir: str, output_path: str) -> None:
+    """Combines all saved .npz feature batch files from a directory into a single file.
+
+    This function is useful after processing images in batches to consolidate
+    all the extracted features into one `.npz` file for easier downstream use.
+
+    Args:
+        batch_dir (str): Directory containing partial `.npz` feature files.
+        output_path (str): Path to the final combined `.npz` file.
+    """
+    combined = {}
+    for filename in tqdm(
+        sorted(os.listdir(batch_dir)), desc="Combining feature batches"
+    ):
+        if filename.endswith(".npz"):
+            batch_path = os.path.join(batch_dir, filename)
+            try:
+                batch = load_features(batch_path)
+                combined.update(batch)
+            except Exception as e:
+                print(f"Skipping {filename}: {e}")
+
+    save_features(combined, output_path)
+    print(f"Combined {len(combined)} features into '{output_path}'.")
+
+
 def save_features(features: dict, output_path: str) -> None:
     """Saves a dictionary of image features to a compressed NumPy .npz file.
 
