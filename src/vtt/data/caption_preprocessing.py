@@ -225,55 +225,111 @@ def load_padded_sequences(filepath: str) -> Dict[str, List[List[int]]]:
 def save_tokenizer(
     tokenizer: Tokenizer, filepath: str, overwrite: bool = False
 ) -> None:
-    """Saves tokenizer as a pickle file.
+    """Saves a tokenizer to either .pkl or .json format based on file extension.
 
     Args:
-        tokenizer (Tokenizer): Fitted tokenizer.
-        filepath (str): Path to save the tokenizer.
+        tokenizer (Tokenizer): Fitted tokenizer to save.
+        filepath (str): Destination file path (.pkl or .json).
         overwrite (bool): If False, skips saving if file exists. Defaults to False.
     """
     if not overwrite and os.path.exists(filepath):
         print(f"[INFO] File already exists and overwrite=False: {filepath}")
         return
-    with open(filepath, "wb") as f:
-        pickle.dump(tokenizer, f)
-    print(f"[INFO] Tokenizer saved to: {filepath}")
+
+    ext = os.path.splitext(filepath)[1].lower()
+    if ext == ".pkl":
+        with open(filepath, "wb") as f:
+            pickle.dump(tokenizer, f)
+        print(f"[INFO] Tokenizer saved to pickle file: {filepath}")
+    elif ext == ".json":
+        tokenizer_json = tokenizer.to_json()
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(tokenizer_json)
+        print(f"[INFO] Tokenizer saved to JSON file: {filepath}")
+    else:
+        raise ValueError("Unsupported file format. Use .pkl or .json")
 
 
 def load_tokenizer(filepath: str) -> Tokenizer:
-    """Loads a tokenizer from a pickle file.
+    """Loads a tokenizer from either a .pkl or .json file based on file extension.
 
     Args:
-        filepath (str): Path to tokenizer file.
+        filepath (str): Path to tokenizer file (.pkl or .json).
 
     Returns:
-        Tokenizer: Loaded tokenizer instance.
+        Tokenizer: Loaded Keras tokenizer object.
     """
-    with open(filepath, "rb") as f:
-        return pickle.load(f)
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"Tokenizer file not found: {filepath}")
+
+    ext = os.path.splitext(filepath)[1].lower()
+    if ext == ".pkl":
+        with open(filepath, "rb") as f:
+            tokenizer = pickle.load(f)
+        print(f"[INFO] Tokenizer loaded from pickle file: {filepath}")
+        return tokenizer
+    elif ext == ".json":
+        with open(filepath, "r", encoding="utf-8") as f:
+            tokenizer_json_str = f.read()  # ✅ READ AS STRING
+        tokenizer = tokenizer_from_json(tokenizer_json_str)
+        print(f"[INFO] Tokenizer loaded from JSON file: {filepath}")
+        return tokenizer
+    else:
+        raise ValueError("Unsupported file format. Use .pkl or .json")
 
 
-def save_tokenizer_json(tokenizer: Tokenizer, filepath: str) -> None:
-    """Saves tokenizer in JSON format.
+# def save_tokenizer(
+#     tokenizer: Tokenizer, filepath: str, overwrite: bool = False
+# ) -> None:
+#     """Saves tokenizer as a pickle file.
 
-    Args:
-        tokenizer (Tokenizer): Fitted tokenizer.
-        filepath (str): Destination JSON file path.
-    """
-    tokenizer_json = tokenizer.to_json()
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(tokenizer_json)
+#     Args:
+#         tokenizer (Tokenizer): Fitted tokenizer.
+#         filepath (str): Path to save the tokenizer.
+#         overwrite (bool): If False, skips saving if file exists. Defaults to False.
+#     """
+#     if not overwrite and os.path.exists(filepath):
+#         print(f"[INFO] File already exists and overwrite=False: {filepath}")
+#         return
+#     with open(filepath, "wb") as f:
+#         pickle.dump(tokenizer, f)
+#     print(f"[INFO] Tokenizer saved to: {filepath}")
 
 
-def load_tokenizer_json(filepath: str) -> Tokenizer:
-    """Loads tokenizer from a JSON file.
+# def load_tokenizer(filepath: str) -> Tokenizer:
+#     """Loads a tokenizer from a pickle file.
 
-    Args:
-        filepath (str): Path to tokenizer JSON file.
+#     Args:
+#         filepath (str): Path to tokenizer file.
 
-    Returns:
-        Tokenizer: Reconstructed tokenizer object.
-    """
-    with open(filepath, "r", encoding="utf-8") as f:
-        tokenizer_json = json.load(f)
-    return tokenizer_from_json(tokenizer_json)
+#     Returns:
+#         Tokenizer: Loaded tokenizer instance.
+#     """
+#     with open(filepath, "rb") as f:
+#         return pickle.load(f)
+
+
+# def save_tokenizer_json(tokenizer: Tokenizer, filepath: str) -> None:
+#     """Saves tokenizer in JSON format.
+
+#     Args:
+#         tokenizer (Tokenizer): Fitted tokenizer.
+#         filepath (str): Destination JSON file path.
+#     """
+#     tokenizer_json = tokenizer.to_json()
+#     with open(filepath, "w", encoding="utf-8") as f:
+#         f.write(tokenizer_json)
+
+
+# def load_tokenizer_json(filepath: str) -> Tokenizer:
+#     """Loads tokenizer from a JSON file.
+
+#     Args:
+#         filepath (str): Path to tokenizer JSON file.
+
+#     Returns:
+#         Tokenizer: Reconstructed tokenizer object.
+#     """
+#     with open(filepath, "r", encoding="utf-8") as f:
+#         tokenizer_json = json.load(f)
+#     return tokenizer_from_json(tokenizer_json)
