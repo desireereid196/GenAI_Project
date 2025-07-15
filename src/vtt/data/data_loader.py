@@ -72,7 +72,8 @@ def load_features_and_sequences(
         dataset = dataset.shuffle(buffer_size=buffer_size)
 
     # Batch the dataset and prefetch elements for performance
-    return dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    # return dataset.batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    return dataset
 
 def prepare_training_dataset(dataset: tf.data.Dataset) -> tf.data.Dataset:
     """Prepares a dataset for sequence-to-sequence training by splitting captions into inputs and targets.
