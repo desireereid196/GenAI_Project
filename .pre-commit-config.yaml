@@ -18,7 +18,7 @@ repos:
     hooks:
       - id: check-added-large-files
         name: Prevent large files not tracked by LFS
-        args: [--maxkb=1024] # Set your desired max file size in KB.
+        args: [--maxkb=2048] # Set your desired max file size in KB.
                             # Files larger than this will trigger the hook if not LFS tracked.
                             # Adjust this value based on your project's needs.
                             # Common values might be 100 (0.1MB) to 1024 (1MB) or more.
