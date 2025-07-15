@@ -16,7 +16,6 @@ import tensorflow as tf
 def load_features_and_sequences(
     features_path: str,
     captions_path: str,
-    batch_size: int = 32,
     shuffle: bool = True,
     buffer_size: int = 1000
 ) -> tf.data.Dataset:
@@ -34,7 +33,6 @@ def load_features_and_sequences(
         captions_path (str): Path to the `.npz` file containing caption sequences.
                              Expected format: {image_id: list_of_padded_caption_sequences_ndarray}.
                              `allow_pickle=True` is used for loading potentially complex arrays.
-        batch_size (int): The number of elements per batch in the output dataset. Defaults to 32.
         shuffle (bool): If True, shuffles the dataset. Defaults to True.
         buffer_size (int): The number of elements from this dataset from which the new dataset
                            will sample. Only used if `shuffle` is True. A larger buffer_size
@@ -72,7 +70,7 @@ def load_features_and_sequences(
         dataset = dataset.shuffle(buffer_size=buffer_size)
 
     # Batch the dataset and prefetch elements for performance
-    return dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    return dataset
 
 def prepare_training_dataset(dataset: tf.data.Dataset) -> tf.data.Dataset:
     """Prepares a dataset for sequence-to-sequence training by splitting captions into inputs and targets.
@@ -101,3 +99,37 @@ def prepare_training_dataset(dataset: tf.data.Dataset) -> tf.data.Dataset:
         # Target sequence: all tokens except the first one (e.g., word1 word2 <end>)
         return (img, caption[:-1]), caption[1:]
     return dataset.map(split_inputs_and_targets)
+
+def load_training_dataset(
+    features_path: str,
+    captions_path: str,
+    batch_size: int = 32,
+    shuffle: bool = True,
+    buffer_size: int = 1000
+) -> tf.data.Dataset:
+    """
+    Loads and returns a fully-prepared tf.data.Dataset ready for training.
+    It handles loading, aligning, splitting, batching, and prefetching.
+
+    Args:
+        features_path (str): Path to image features .npz file.
+        captions_path (str): Path to padded caption sequences .npz file.
+        batch_size (int): Batch size for training.
+        shuffle (bool): Whether to shuffle the dataset before training.
+        buffer_size (int): Buffer size for shuffling.
+
+    Returns:
+        tf.data.Dataset: Batches of ((image, caption_input), caption_target)
+    """
+    raw_dataset = load_features_and_sequences(
+        features_path=features_path,
+        captions_path=captions_path,
+        shuffle=shuffle,
+        buffer_size=buffer_size
+    )
+
+    # Split into inputs and targets
+    seq2seq_dataset = prepare_training_dataset(raw_dataset)
+
+    # Apply batching and prefetching in correct order
+    return seq2seq_dataset.batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)

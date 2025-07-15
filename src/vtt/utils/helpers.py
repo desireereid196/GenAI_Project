@@ -12,6 +12,9 @@ Functionality:
     - Fallbacks safely to CPU if no GPU is available or setup fails.
 """
 
+import os
+import random
+import numpy as np
 import tensorflow as tf
 
 
@@ -51,3 +54,16 @@ def detect_and_set_device() -> str:
     else:
         print("TensorFlow is not built with CUDA support. Using CPU.")
         return 'CPU'
+
+def set_seed(seed: int = 42) -> None:
+    """
+    Sets random seeds for reproducibility across Python, NumPy, and TensorFlow.
+
+    Args:
+        seed (int): The seed value to use. Default is 42.
+    """
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    print(f"Random seed set to {seed}")
