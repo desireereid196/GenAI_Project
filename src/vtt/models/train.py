@@ -24,7 +24,7 @@ def train_model(
     model: tf.keras.Model,
     epochs: int = 10,
     checkpoint_path: str = "model_checkpoint.weights.h5",
-    early_stop_patience: Optional[int] = None
+    early_stop_patience: Optional[int] = 5
 ) -> tf.keras.callbacks.History:
     """
     Trains the image captioning model using the provided dataset.
@@ -42,7 +42,7 @@ def train_model(
         epochs (int): Number of training epochs to run. Defaults to 10.
         checkpoint_path (str): Path to save model weights during training.
         early_stop_patience (int, optional): Number of epochs to wait for improvement
-            in loss before stopping early. If None, early stopping is disabled.
+            in loss before stopping early. Set to None to disable early stopping.
 
     Returns:
         tf.keras.callbacks.History: A Keras History object containing training metrics.
