@@ -270,66 +270,9 @@ def load_tokenizer(filepath: str) -> Tokenizer:
         return tokenizer
     elif ext == ".json":
         with open(filepath, "r", encoding="utf-8") as f:
-            tokenizer_json_str = f.read()  # ✅ READ AS STRING
+            tokenizer_json_str = f.read()
         tokenizer = tokenizer_from_json(tokenizer_json_str)
         print(f"[INFO] Tokenizer loaded from JSON file: {filepath}")
         return tokenizer
     else:
         raise ValueError("Unsupported file format. Use .pkl or .json")
-
-
-# def save_tokenizer(
-#     tokenizer: Tokenizer, filepath: str, overwrite: bool = False
-# ) -> None:
-#     """Saves tokenizer as a pickle file.
-
-#     Args:
-#         tokenizer (Tokenizer): Fitted tokenizer.
-#         filepath (str): Path to save the tokenizer.
-#         overwrite (bool): If False, skips saving if file exists. Defaults to False.
-#     """
-#     if not overwrite and os.path.exists(filepath):
-#         print(f"[INFO] File already exists and overwrite=False: {filepath}")
-#         return
-#     with open(filepath, "wb") as f:
-#         pickle.dump(tokenizer, f)
-#     print(f"[INFO] Tokenizer saved to: {filepath}")
-
-
-# def load_tokenizer(filepath: str) -> Tokenizer:
-#     """Loads a tokenizer from a pickle file.
-
-#     Args:
-#         filepath (str): Path to tokenizer file.
-
-#     Returns:
-#         Tokenizer: Loaded tokenizer instance.
-#     """
-#     with open(filepath, "rb") as f:
-#         return pickle.load(f)
-
-
-# def save_tokenizer_json(tokenizer: Tokenizer, filepath: str) -> None:
-#     """Saves tokenizer in JSON format.
-
-#     Args:
-#         tokenizer (Tokenizer): Fitted tokenizer.
-#         filepath (str): Destination JSON file path.
-#     """
-#     tokenizer_json = tokenizer.to_json()
-#     with open(filepath, "w", encoding="utf-8") as f:
-#         f.write(tokenizer_json)
-
-
-# def load_tokenizer_json(filepath: str) -> Tokenizer:
-#     """Loads tokenizer from a JSON file.
-
-#     Args:
-#         filepath (str): Path to tokenizer JSON file.
-
-#     Returns:
-#         Tokenizer: Reconstructed tokenizer object.
-#     """
-#     with open(filepath, "r", encoding="utf-8") as f:
-#         tokenizer_json = json.load(f)
-#     return tokenizer_from_json(tokenizer_json)
