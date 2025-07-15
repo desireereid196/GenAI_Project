@@ -46,7 +46,6 @@ GenAI_Project/
 ├── notebooks/                            # Development and proof-of-concept notebooks.
 ├── outputs/                              # Model runner outputs needed for Milestone 3.
 ├── scripts/                              # 
-    ├── data_runner.py                    # Data pipeline script needed for Milestone 2.
     └── model_runner.py                   # Model pipeline script needed for Milestone 3.
 └── src/                                  # Contains the core source code.
     └── vtt/                              # The main package for the project.
@@ -62,12 +61,12 @@ GenAI_Project/
             └── metrics.py                # Core metric functions (BLEU, METEOR, BERTScore, etc.)
         ├── models/                       #
             ├── __init__.py               #
-            ├── architecture.py           # Model architecture definitions.
-            ├── train.py                  # Model training logic.       
+            ├── decoder.py                # Model architecture definitions.
+            ├── train.py                  # Model training logic (training loop, checkpoint saving, etc.)     
             └── predict.py                # Caption generation from trained model.
         └── utils/                        # 
             ├── config.py                 # Project configuration and dependencies.
-            └── helpers.py                  # Shared helper and utility functions.
+            └── helpers.py                # Shared helper and utility functions.
 ```
 
 ## 🛠 Setup
