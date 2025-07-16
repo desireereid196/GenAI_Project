@@ -34,7 +34,7 @@ def detect_and_set_device() -> str:
     # Check whether TensorFlow was compiled with GPU support
     if tf.test.is_built_with_cuda():
         # List available GPU devices
-        physical_devices = tf.config.list_physical_devices('GPU')
+        physical_devices = tf.config.list_physical_devices("GPU")
 
         if physical_devices:
             print("GPU is available. Attempting to use GPU.")
@@ -43,17 +43,20 @@ def detect_and_set_device() -> str:
                 for gpu in physical_devices:
                     tf.config.experimental.set_memory_growth(gpu, True)
                 print(f"Successfully configured GPU(s): {physical_devices}")
-                return 'GPU'
+                return "GPU"
             except RuntimeError as e:
                 # RuntimeError can occur if memory growth is set after device initialization
                 print(f"Error setting GPU memory growth: {e}. Falling back to CPU.")
-                return 'CPU'
+                return "CPU"
         else:
-            print("No GPU devices found despite TensorFlow being built with CUDA. Using CPU.")
-            return 'CPU'
+            print(
+                "No GPU devices found despite TensorFlow being built with CUDA. Using CPU."
+            )
+            return "CPU"
     else:
         print("TensorFlow is not built with CUDA support. Using CPU.")
-        return 'CPU'
+        return "CPU"
+
 
 def set_seed(seed: int = 42) -> None:
     """

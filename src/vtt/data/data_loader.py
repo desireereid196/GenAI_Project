@@ -4,9 +4,9 @@ data_loader.py
 This module provides utilities for loading and preparing image-caption datasets
 as TensorFlow `tf.data.Dataset` objects suitable for training, validation, and testing.
 
-It handles loading features and caption sequences from `.npz` files, aligning features 
-with captions based on image IDs, splitting into train/validation/test, preparing the 
-data for sequence-to-sequence learning, and setting up batching and shuffling for 
+It handles loading features and caption sequences from `.npz` files, aligning features
+with captions based on image IDs, splitting into train/validation/test, preparing the
+data for sequence-to-sequence learning, and setting up batching and shuffling for
 efficient data pipeline processing.
 """
 
@@ -16,8 +16,7 @@ from typing import Tuple, Optional, Union
 
 
 def load_features_and_sequences(
-    features_path: str,
-    captions_path: str
+    features_path: str, captions_path: str
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Load aligned image features and caption sequences from .npz files.
@@ -44,7 +43,7 @@ def load_features_and_sequences(
 
     return (
         np.asarray(image_features, dtype=np.float32),
-        np.asarray(caption_sequences, dtype=np.int32)
+        np.asarray(caption_sequences, dtype=np.int32),
     )
 
 
@@ -58,6 +57,7 @@ def prepare_dataset(dataset: tf.data.Dataset) -> tf.data.Dataset:
     Returns:
         tf.data.Dataset: A dataset of ((image_feature, input_caption), target_caption) pairs.
     """
+
     def split_inputs_and_targets(img, caption):
         return (img, caption[:-1]), caption[1:]
 
@@ -70,7 +70,7 @@ def load_training_dataset(
     batch_size: int = 32,
     shuffle: bool = True,
     buffer_size: int = 1000,
-    cache: bool = False
+    cache: bool = False,
 ) -> tf.data.Dataset:
     """
     Loads and returns a fully-prepared tf.data.Dataset ready for training.
@@ -88,15 +88,19 @@ def load_training_dataset(
         tf.data.Dataset: Batches of ((image, caption_input), caption_target)
     """
     # Load raw aligned feature-caption pairs
-    image_features, caption_sequences = load_features_and_sequences(features_path, captions_path)
-    assert len(image_features) == len(caption_sequences), "Mismatched features and captions."
+    image_features, caption_sequences = load_features_and_sequences(
+        features_path, captions_path
+    )
+    assert len(image_features) == len(
+        caption_sequences
+    ), "Mismatched features and captions."
 
     # Split into inputs and targets
     dataset = tf.data.Dataset.from_tensor_slices((image_features, caption_sequences))
     dataset = prepare_dataset(dataset)
 
     if cache:
-        dataset = dataset.cache()        
+        dataset = dataset.cache()
     if shuffle:
         dataset = dataset.shuffle(buffer_size)
 
@@ -114,10 +118,10 @@ def load_split_datasets(
     buffer_size: int = 1000,
     seed: Optional[int] = 42,
     cache: bool = False,
-    return_numpy: bool = False
+    return_numpy: bool = False,
 ) -> Union[
     Tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset],
-    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
 ]:
     """
     Load features and captions, perform a train/val/test split, and return preprocessed tf.data.Datasets
@@ -142,8 +146,12 @@ def load_split_datasets(
             Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
             (train_X, train_y, val_X, val_y, test_X, test_y)
     """
-    image_features, caption_sequences = load_features_and_sequences(features_path, captions_path)
-    assert len(image_features) == len(caption_sequences), "Mismatched features and captions."
+    image_features, caption_sequences = load_features_and_sequences(
+        features_path, captions_path
+    )
+    assert len(image_features) == len(
+        caption_sequences
+    ), "Mismatched features and captions."
 
     # Shuffle before splitting
     if shuffle:
@@ -161,18 +169,16 @@ def load_split_datasets(
     # Split datasets
     train_X = image_features[:train_size]
     train_y = caption_sequences[:train_size]
-    val_X = image_features[train_size:train_size + val_size]
-    val_y = caption_sequences[train_size:train_size + val_size]
-    test_X = image_features[train_size + val_size:]
-    test_y = caption_sequences[train_size + val_size:]
+    val_X = image_features[train_size : train_size + val_size]
+    val_y = caption_sequences[train_size : train_size + val_size]
+    test_X = image_features[train_size + val_size :]
+    test_y = caption_sequences[train_size + val_size :]
 
     if return_numpy:
         return train_X, train_y, val_X, val_y, test_X, test_y
 
     def make_dataset(
-        features: np.ndarray,
-        captions: np.ndarray,
-        drop_remainder: bool
+        features: np.ndarray, captions: np.ndarray, drop_remainder: bool
     ) -> tf.data.Dataset:
         """
         Create a tf.data.Dataset pipeline from NumPy arrays, optionally caching,
@@ -194,10 +200,14 @@ def load_split_datasets(
         if shuffle:
             dataset = dataset.shuffle(buffer_size)
 
-        return dataset.batch(batch_size, drop_remainder=drop_remainder).prefetch(tf.data.AUTOTUNE)
+        return dataset.batch(batch_size, drop_remainder=drop_remainder).prefetch(
+            tf.data.AUTOTUNE
+        )
 
     return (
-        make_dataset(train_X, train_y, True),   # drop_remainder = True for training; needed to ensure consistent batch shape
-        make_dataset(val_X, val_y, False),      # keep all data for validation
-        make_dataset(test_X, test_y, False)     # keep all data for testing
+        make_dataset(
+            train_X, train_y, True
+        ),  # drop_remainder = True for training; needed to ensure consistent batch shape
+        make_dataset(val_X, val_y, False),  # keep all data for validation
+        make_dataset(test_X, test_y, False),  # keep all data for testing
     )

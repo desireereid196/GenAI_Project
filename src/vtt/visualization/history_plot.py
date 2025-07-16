@@ -20,7 +20,7 @@ def plot_training_history(
     history: History,
     metrics: Sequence[str] = ("loss",),
     figsize: Tuple[int, int] = (8, 4),
-    grid: bool = False
+    grid: bool = False,
 ) -> None:
     """
     Plot training and validation metrics from a Keras History object.

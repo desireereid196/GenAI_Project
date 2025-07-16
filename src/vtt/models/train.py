@@ -25,14 +25,14 @@ def train_model(
     epochs: int = 10,
     checkpoint_path: str = "model_checkpoint.weights.h5",
     early_stop_patience: Optional[int] = 5,
-    val_dataset: Optional[tf.data.Dataset] = None
+    val_dataset: Optional[tf.data.Dataset] = None,
 ) -> tf.keras.callbacks.History:
     """
     Trains the image captioning model using the provided dataset.
 
-    This function takes a preprocessed and batched dataset, builds the model 
-    by forcing a dummy forward pass (to avoid tracing errors related to variable 
-    creation in tf.function), and fits the model with optional early stopping 
+    This function takes a preprocessed and batched dataset, builds the model
+    by forcing a dummy forward pass (to avoid tracing errors related to variable
+    creation in tf.function), and fits the model with optional early stopping
     and model checkpointing.
 
     Args:
@@ -50,7 +50,7 @@ def train_model(
     """
     # Force model to build before tracing starts ----
     # This avoids runtime errors caused by variable creation during model.fit()
-    for (dummy_inputs, _) in dataset.take(1):
+    for dummy_inputs, _ in dataset.take(1):
         dummy_img, dummy_caption = dummy_inputs
         _ = model((dummy_img, dummy_caption), training=False)
         break  # Only need one batch
@@ -63,24 +63,23 @@ def train_model(
             save_best_only=True,
             monitor="val_loss" if val_dataset else "loss",
             mode="min",
-            verbose=1
+            verbose=1,
         )
     ]
     # Add early stopping callback if applicable
     if early_stop_patience is not None:
-        callbacks.append(tf.keras.callbacks.EarlyStopping(
-            monitor="val_loss" if val_dataset else "loss",
-            patience=early_stop_patience,
-            restore_best_weights=True,
-            verbose=1
-        ))
+        callbacks.append(
+            tf.keras.callbacks.EarlyStopping(
+                monitor="val_loss" if val_dataset else "loss",
+                patience=early_stop_patience,
+                restore_best_weights=True,
+                verbose=1,
+            )
+        )
 
     # Train model
     history = model.fit(
-        dataset,
-        validation_data=val_dataset,
-        epochs=epochs,
-        callbacks=callbacks
+        dataset, validation_data=val_dataset, epochs=epochs, callbacks=callbacks
     )
 
     return history

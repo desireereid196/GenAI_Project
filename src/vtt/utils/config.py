@@ -3,7 +3,7 @@ config.py
 
 Global configuration constants used across the project.
 
-This module centralizes parameters and special tokens to ensure consistency 
+This module centralizes parameters and special tokens to ensure consistency
 across different components including preprocessing, tokenization, and model input.
 
 Constants:

@@ -21,21 +21,14 @@ Typical use:
 
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import (
-    Input,
-    Dense,
-    Embedding,
-    LSTM,
-    Concatenate,
-    Lambda
-)
+from tensorflow.keras.layers import Input, Dense, Embedding, LSTM, Concatenate, Lambda
 
 
 def build_decoder_model(
     vocab_size: int,
     max_caption_len: int,
     embedding_dim: int = 256,
-    lstm_units: int = 512
+    lstm_units: int = 512,
 ) -> tf.keras.Model:
     """
     Builds and compiles a decoder model for image captioning.
@@ -53,23 +46,23 @@ def build_decoder_model(
     # ----- Image Feature Input -----
     # Input shape: (batch_size, 2048), e.g., from ResNet avg_pool layer
     img_input = Input(shape=(2048,), name="image_input")
-    
+
     # Project image embedding to same dimension as word embeddings
     img_emb = Dense(embedding_dim, activation="relu", name="image_dense")(img_input)
-    
+
     # Add time dimension to match caption input shape: (batch_size, 1, embedding_dim)
     img_emb = Lambda(lambda x: tf.expand_dims(x, 1), name="expand_image")(img_emb)
 
     # ----- Caption Input -----
     # Input shape: (batch_size, max_caption_len)
     caption_input = Input(shape=(max_caption_len,), name="caption_input")
-    
+
     # Embed caption tokens: output shape (batch_size, max_caption_len, embedding_dim)
     caption_emb = Embedding(
         input_dim=vocab_size,
         output_dim=embedding_dim,
         mask_zero=False,
-        name="caption_embedding"
+        name="caption_embedding",
     )(caption_input)
 
     # ----- Merge Inputs -----
@@ -82,16 +75,17 @@ def build_decoder_model(
 
     # ----- Output Layer -----
     # Output shape: (batch_size, max_caption_len+1, vocab_size)
-    output = Dense(units=vocab_size, activation="softmax", name="output_dense")(lstm_out)
+    output = Dense(units=vocab_size, activation="softmax", name="output_dense")(
+        lstm_out
+    )
 
     # Remove the first timestep output (image position) to align with caption target
     output = Lambda(lambda x: x[:, 1:, :], name="trim_image_output")(output)
 
     # ----- Compile Model -----
-    model = Model(inputs=[img_input, caption_input], outputs=output, name="ImageCaptionDecoder")
-    model.compile(
-        loss="sparse_categorical_crossentropy",
-        optimizer="adam"
+    model = Model(
+        inputs=[img_input, caption_input], outputs=output, name="ImageCaptionDecoder"
     )
+    model.compile(loss="sparse_categorical_crossentropy", optimizer="adam")
 
     return model

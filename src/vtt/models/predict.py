@@ -26,7 +26,7 @@ def generate_caption_greedy(
     model: Model,
     tokenizer: Tokenizer,
     image_feature: np.ndarray,
-    max_len: Optional[int] = None
+    max_len: Optional[int] = None,
 ) -> str:
     """
     Generates a caption from image features using greedy decoding.
@@ -59,7 +59,9 @@ def generate_caption_greedy(
         padded_seq = pad_sequences([caption_seq], maxlen=max_len, padding="post")
 
         # Predict next word using current sequence
-        preds = model.predict([np.expand_dims(image_feature, axis=0), padded_seq], verbose=0)
+        preds = model.predict(
+            [np.expand_dims(image_feature, axis=0), padded_seq], verbose=0
+        )
 
         # Take most probable word ID at the current time step
         next_id = int(np.argmax(preds[0, len(caption_seq) - 1, :]))
@@ -81,7 +83,7 @@ def display_images_with_captions(
     model: Model,
     tokenizer: Tokenizer,
     features: Dict[str, np.ndarray],
-    image_folder: str
+    image_folder: str,
 ) -> None:
     """
     Displays each image with its predicted caption.
