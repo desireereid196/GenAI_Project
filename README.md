@@ -42,7 +42,7 @@ GenAI_Project/
     ├── experiment_3.ipynb                # Semantic Fidelity Comparison. 
     └── experiment_4.ipynb                # Generalization. 
 ├── figures/                              # Figures for the report and presentation.
-├── models/                               # Trained models.
+├── models/                               # Trained models and weights.
 ├── notebooks/                            # Development and proof-of-concept notebooks.
 ├── outputs/                              # Model runner outputs needed for Milestone 3.
 ├── scripts/                              # 
@@ -64,9 +64,13 @@ GenAI_Project/
             ├── decoder.py                # Model architecture definitions.
             ├── train.py                  # Model training logic (training loop, checkpoint saving, etc.)     
             └── predict.py                # Caption generation from trained model.
-        └── utils/                        # 
+        ├── utils/                        # 
+            ├── __init__.py               #
             ├── config.py                 # Project configuration and dependencies.
             └── helpers.py                # Shared helper and utility functions.
+        └── visualization/
+            ├── __init__.py               #
+            └── history_plot.py           #
 ```
 
 ## 🛠 Setup
