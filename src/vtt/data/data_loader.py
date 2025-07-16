@@ -1,111 +1,76 @@
 """
 data_loader.py
 
-This module provides utilities for loading image features and
-corresponding caption sequences, and preparing them as TensorFlow
-`tf.data.Dataset` objects suitable for model training.
+This module provides utilities for loading and preparing image-caption datasets
+as TensorFlow `tf.data.Dataset` objects suitable for training, validation, and testing.
 
-It handles loading data from `.npz` files, aligning features with captions
-based on image IDs, and setting up batching and shuffling for efficient
-data pipeline processing.
+It handles loading features and caption sequences from `.npz` files, aligning features 
+with captions based on image IDs, splitting into train/validation/test, preparing the 
+data for sequence-to-sequence learning, and setting up batching and shuffling for 
+efficient data pipeline processing.
 """
 
 import numpy as np
 import tensorflow as tf
+from typing import Tuple, Optional, Union
+
 
 def load_features_and_sequences(
     features_path: str,
-    captions_path: str,
-    shuffle: bool = True,
-    buffer_size: int = 1000
-) -> tf.data.Dataset:
-    """Loads image features and corresponding caption sequences into a tf.data.Dataset.
-
-    This function reads pre-extracted image features (e.g., from a ResNet) and
-    padded caption sequences from `.npz` files. It aligns the features with
-    their respective captions based on image IDs, then converts them into
-    TensorFlow tensors to create a `tf.data.Dataset`. The dataset can be
-    shuffled, batched, and prefetched for optimized training performance.
+    captions_path: str
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Load aligned image features and caption sequences from .npz files.
 
     Args:
-        features_path (str): Path to the `.npz` file containing image features.
-                             Expected format: {image_id: feature_vector_ndarray}.
-        captions_path (str): Path to the `.npz` file containing caption sequences.
-                             Expected format: {image_id: list_of_padded_caption_sequences_ndarray}.
-                             `allow_pickle=True` is used for loading potentially complex arrays.
-        shuffle (bool): If True, shuffles the dataset. Defaults to True.
-        buffer_size (int): The number of elements from this dataset from which the new dataset
-                           will sample. Only used if `shuffle` is True. A larger buffer_size
-                           provides better shuffling but uses more CPU memory. Defaults to 1000.
+        features_path (str): Path to the .npz file of image features {image_id: feature_vector}.
+        captions_path (str): Path to the .npz file of padded caption sequences
+                             {image_id: [sequence1, sequence2, ...]}.
 
     Returns:
-        tf.data.Dataset: A TensorFlow dataset where each element is a tuple
-                         (image_feature_tensor, caption_sequence_tensor).
-                         The dataset is batched and prefetched.
+        Tuple[np.ndarray, np.ndarray]: Two NumPy arrays (features, captions), aligned 1:1.
     """
-    # Load image features and caption sequences from .npz files
     features_npz = np.load(features_path)
     captions_npz = np.load(captions_path, allow_pickle=True)
 
     image_features = []
     caption_sequences = []
 
-    # Iterate through image IDs in captions_npz to ensure captions have corresponding features
     for img_id in captions_npz.files:
         if img_id in features_npz:
-            # For each image ID, append its feature for every associated caption
             for caption in captions_npz[img_id]:
                 image_features.append(features_npz[img_id])
                 caption_sequences.append(caption)
 
-    # Convert the lists of features and captions to TensorFlow tensors
-    features_tensor = tf.convert_to_tensor(image_features, dtype=tf.float32)
-    captions_tensor = tf.convert_to_tensor(caption_sequences, dtype=tf.int32)
+    return (
+        np.asarray(image_features, dtype=np.float32),
+        np.asarray(caption_sequences, dtype=np.int32)
+    )
 
-    # Create a TensorFlow dataset from the tensors
-    dataset = tf.data.Dataset.from_tensor_slices((features_tensor, captions_tensor))
 
-    # Apply shuffling if requested
-    if shuffle:
-        dataset = dataset.shuffle(buffer_size=buffer_size)
-
-    # Batch the dataset and prefetch elements for performance
-    return dataset
-
-def prepare_training_dataset(dataset: tf.data.Dataset) -> tf.data.Dataset:
-    """Prepares a dataset for sequence-to-sequence training by splitting captions into inputs and targets.
-
-    This function applies a mapping operation to each element of the input
-    dataset. For each (image_feature, caption_sequence) pair, it transforms
-    them into ((image_feature, input_caption_sequence), target_caption_sequence).
-    The input caption sequence is the original caption shifted by one position
-    (excluding the last token), and the target caption sequence is the original
-    caption shifted by one position (excluding the first token). This is
-    standard for teacher-forcing in sequence models where the model learns
-    to predict the next token.
+def prepare_dataset(dataset: tf.data.Dataset) -> tf.data.Dataset:
+    """
+    Split each caption into (input, target) for sequence-to-sequence training.
 
     Args:
-        dataset (tf.data.Dataset): The input TensorFlow dataset, where each
-                                   element is a tuple (image_feature_tensor,
-                                   caption_sequence_tensor).
+        dataset (tf.data.Dataset): A dataset of (image_feature, full_caption) pairs.
 
     Returns:
-        tf.data.Dataset: A new TensorFlow dataset where each element is a tuple
-                         of ((image_feature_tensor, input_caption_tensor), target_caption_tensor).
+        tf.data.Dataset: A dataset of ((image_feature, input_caption), target_caption) pairs.
     """
     def split_inputs_and_targets(img, caption):
-        """Helper function to split a caption into input and target sequences."""
-        # Input sequence: all tokens except the last one (e.g., <start> word1 word2 ...)
-        # Target sequence: all tokens except the first one (e.g., word1 word2 <end>)
         return (img, caption[:-1]), caption[1:]
-    return dataset.map(split_inputs_and_targets)
+
+    return dataset.map(split_inputs_and_targets, num_parallel_calls=tf.data.AUTOTUNE)
+
 
 def load_training_dataset(
     features_path: str,
     captions_path: str,
     batch_size: int = 32,
     shuffle: bool = True,
-    buffer_size: int = 1000
+    buffer_size: int = 1000,
+    cache: bool = False
 ) -> tf.data.Dataset:
     """
     Loads and returns a fully-prepared tf.data.Dataset ready for training.
@@ -117,19 +82,122 @@ def load_training_dataset(
         batch_size (int): Batch size for training.
         shuffle (bool): Whether to shuffle the dataset before training.
         buffer_size (int): Buffer size for shuffling.
+        cache (bool): Whether to cache the dataset in memory. Defaults to False.
 
     Returns:
         tf.data.Dataset: Batches of ((image, caption_input), caption_target)
     """
-    raw_dataset = load_features_and_sequences(
-        features_path=features_path,
-        captions_path=captions_path,
-        shuffle=shuffle,
-        buffer_size=buffer_size
-    )
+    # Load raw aligned feature-caption pairs
+    image_features, caption_sequences = load_features_and_sequences(features_path, captions_path)
+    assert len(image_features) == len(caption_sequences), "Mismatched features and captions."
 
     # Split into inputs and targets
-    seq2seq_dataset = prepare_training_dataset(raw_dataset)
+    dataset = tf.data.Dataset.from_tensor_slices((image_features, caption_sequences))
+    dataset = prepare_dataset(dataset)
+
+    if cache:
+        dataset = dataset.cache()        
+    if shuffle:
+        dataset = dataset.shuffle(buffer_size)
 
     # Apply batching and prefetching in correct order
-    return seq2seq_dataset.batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+    return dataset.batch(batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+
+
+def load_split_datasets(
+    features_path: str,
+    captions_path: str,
+    batch_size: int = 32,
+    val_split: float = 0.15,
+    test_split: float = 0.10,
+    shuffle: bool = True,
+    buffer_size: int = 1000,
+    seed: Optional[int] = 42,
+    cache: bool = False,
+    return_numpy: bool = False
+) -> Union[
+    Tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset],
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+]:
+    """
+    Load features and captions, perform a train/val/test split, and return preprocessed tf.data.Datasets
+    or optionally the raw NumPy arrays.
+
+    Args:
+        features_path (str): Path to the .npz file with image features.
+        captions_path (str): Path to the .npz file with padded caption sequences.
+        batch_size (int): Number of samples per batch. Defaults to 32.
+        val_split (float): Proportion of data to use for validation. Defaults 0.15.
+        test_split (float): Proportion of data to use for testing. Defaults to 0.10.
+        shuffle (bool): Whether to shuffle the data before splitting. Defaults to True
+        buffer_size (int): Buffer size for shuffling. Defaults to 1000.
+        seed (int, optional): Random seed for shuffling. Defaults to 42.
+        cache (bool): Whether to cache the dataset in memory. Defaults to False.
+        return_numpy (bool): If True, return NumPy arrays instead of tf.data.Dataset objects. Defaults to False.
+
+    Returns:
+        If return_numpy is False:
+            Tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]
+        If return_numpy is True:
+            Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+            (train_X, train_y, val_X, val_y, test_X, test_y)
+    """
+    image_features, caption_sequences = load_features_and_sequences(features_path, captions_path)
+    assert len(image_features) == len(caption_sequences), "Mismatched features and captions."
+
+    # Shuffle before splitting
+    if shuffle:
+        rng = np.random.default_rng(seed)
+        idx = rng.permutation(len(image_features))
+        image_features = image_features[idx]
+        caption_sequences = caption_sequences[idx]
+
+    # Compute split boundaries
+    total = len(image_features)
+    val_size = int(val_split * total)
+    test_size = int(test_split * total)
+    train_size = total - val_size - test_size
+
+    # Split datasets
+    train_X = image_features[:train_size]
+    train_y = caption_sequences[:train_size]
+    val_X = image_features[train_size:train_size + val_size]
+    val_y = caption_sequences[train_size:train_size + val_size]
+    test_X = image_features[train_size + val_size:]
+    test_y = caption_sequences[train_size + val_size:]
+
+    if return_numpy:
+        return train_X, train_y, val_X, val_y, test_X, test_y
+
+    def make_dataset(
+        features: np.ndarray,
+        captions: np.ndarray,
+        drop_remainder: bool
+    ) -> tf.data.Dataset:
+        """
+        Create a tf.data.Dataset pipeline from NumPy arrays, optionally caching,
+        shuffling, batching, and prefetching the data.
+
+        Args:
+            features (np.ndarray): Image feature vectors.
+            captions (np.ndarray): Corresponding padded caption sequences.
+            drop_remainder (bool): Whether to drop the last batch if it is smaller than `batch_size`.
+
+        Returns:
+            tf.data.Dataset: A batched, prefetched dataset suitable for training or evaluation.
+        """
+        dataset = tf.data.Dataset.from_tensor_slices((features, captions))
+        dataset = prepare_dataset(dataset)
+
+        if cache:
+            dataset = dataset.cache()
+        if shuffle:
+            dataset = dataset.shuffle(buffer_size)
+
+        return dataset.batch(batch_size, drop_remainder=drop_remainder).prefetch(tf.data.AUTOTUNE)
+
+    return (
+        make_dataset(train_X, train_y, True),   # drop_remainder = True for training; needed to ensure consistent batch shape
+        make_dataset(val_X, val_y, False),      # keep all data for validation
+        make_dataset(test_X, test_y, False)     # keep all data for testing
+    )
