@@ -24,7 +24,8 @@ def train_model(
     model: tf.keras.Model,
     epochs: int = 10,
     checkpoint_path: str = "model_checkpoint.weights.h5",
-    early_stop_patience: Optional[int] = 5
+    early_stop_patience: Optional[int] = 5,
+    val_dataset: Optional[tf.data.Dataset] = None
 ) -> tf.keras.callbacks.History:
     """
     Trains the image captioning model using the provided dataset.
@@ -60,7 +61,7 @@ def train_model(
             filepath=checkpoint_path,
             save_weights_only=True,
             save_best_only=True,
-            monitor="loss",
+            monitor="val_loss" if val_dataset else "loss",
             mode="min",
             verbose=1
         )
@@ -68,7 +69,7 @@ def train_model(
     # Add early stopping callback if applicable
     if early_stop_patience is not None:
         callbacks.append(tf.keras.callbacks.EarlyStopping(
-            monitor="loss",
+            monitor="val_loss" if val_dataset else "loss",
             patience=early_stop_patience,
             restore_best_weights=True,
             verbose=1
@@ -77,6 +78,7 @@ def train_model(
     # Train model
     history = model.fit(
         dataset,
+        validation_data=val_dataset,
         epochs=epochs,
         callbacks=callbacks
     )
