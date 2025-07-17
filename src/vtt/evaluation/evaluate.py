@@ -1,66 +1,60 @@
 """
 evaluate.py
 
-This module provides a unified interface to evaluate image captioning models
-against ground-truth captions using common automatic metrics.
+This module provides utilities to evaluate image captioning models
+using standard NLP metrics.
 
 Supports:
-- BLEU-1, BLEU-2, BLEU-3, BLEU-4
+- BLEU-1 to BLEU-4
 - METEOR
 - BERTScore
 
 Usage:
-    1. Provide two dictionaries:
-        - references_dict: {image_id: [ref1, ref2, ...]}
-        - predictions_dict: {image_id: "generated caption"}
-    2. Call evaluate_captions()
-
-Returns:
-    Dictionary of average scores across the dataset.
+1. evaluate_captions(): Evaluate predictions vs. ground truth captions.
+2. evaluate_model(): Generate predictions for a test set and evaluate.
 """
 
-from typing import Dict, List
+from typing import Dict, List, Tuple, Union
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.preprocessing.text import Tokenizer
+import tqdm
 
 from vtt.evaluation.metrics import (
     compute_bertscore,
     compute_bleu_scores,
     compute_meteor_scores,
 )
+from vtt.models.predict import generate_caption_greedy
 
 
 def evaluate_captions(
     references_dict: Dict[str, List[str]], predictions_dict: Dict[str, str]
 ) -> Dict[str, float]:
     """
-    Evaluate generated captions against reference captions using BLEU, METEOR, and
-    BERTScore.
+    Evaluate generated captions against reference captions using BLEU, METEOR, and BERTScore.
 
     Args:
-        references_dict (Dict[str, List[str]]): Mapping from image ID to a list of
-            reference captions.
-        predictions_dict (Dict[str, str]): Mapping from image ID to generated caption.
+        references_dict (Dict[str, List[str]]): Ground-truth captions by image ID.
+        predictions_dict (Dict[str, str]): Predicted captions by image ID.
 
     Returns:
-        Dict[str, float]: Dictionary of metric names to averaged scores.
+        Dict[str, float]: Averaged scores for each metric.
     """
-    # Find the common set of image IDs
+    # Find common image IDs
     common_keys = list(set(references_dict.keys()) & set(predictions_dict.keys()))
     if not common_keys:
-        raise ValueError(
-            "No overlapping image IDs found between references and predictions."
-        )
+        raise ValueError("No overlapping image IDs between references and predictions.")
 
-    # Tokenize references and predictions, aligned by common_keys
+    # Tokenize
     tokenized_references = [
         [ref.split() for ref in references_dict[img_id]] for img_id in common_keys
     ]
     tokenized_candidates = [predictions_dict[img_id].split() for img_id in common_keys]
-
-    # Raw format needed for METEOR and BERTScore
     raw_candidates = [predictions_dict[k] for k in common_keys]
     single_refs_for_bertscore = [references_dict[k][0] for k in common_keys]
 
-    # Compute and aggregate scores
     scores = {}
     scores.update(compute_bleu_scores(tokenized_references, tokenized_candidates))
     scores["METEOR"] = compute_meteor_scores(
@@ -69,3 +63,82 @@ def evaluate_captions(
     scores.update(compute_bertscore(single_refs_for_bertscore, raw_candidates))
 
     return scores
+
+
+def evaluate_model(
+    model: Model,
+    tokenizer: Tokenizer,
+    features: Dict[str, np.ndarray],
+    test_dataset: Union[tf.data.Dataset, Tuple[np.ndarray, np.ndarray, List[str]]],
+    references_dict: Dict[str, List[str]],
+    max_len: int,
+) -> Dict[str, float]:
+    """
+    Generate captions from a model and evaluate them against reference captions.
+
+    Args:
+        model (Model): Trained image captioning model.
+        tokenizer (Tokenizer): Tokenizer used for encoding/decoding.
+        features (Dict[str, np.ndarray]): Image features keyed by image ID.
+        test_dataset (Union[tf.data.Dataset, Tuple[np.ndarray, np.ndarray, List[str]]]):
+            Either a batched tf.data.Dataset or tuple of (features, captions, image_ids).
+        references_dict (Dict[str, List[str]]): Reference captions for evaluation.
+        max_len (int): Maximum caption length for decoding.
+
+    Returns:
+        Dict[str, float]: Dictionary of evaluation scores.
+    """
+    predictions_dict = {}
+
+    if isinstance(test_dataset, tf.data.Dataset):
+
+        # Get total number of batches for tqdm if possible
+        total_batches = None
+        try:
+            # tf.data.experimental.cardinality() provides the number of batches
+            # if the dataset is finite and its size is known.
+            total_batches = tf.data.experimental.cardinality(test_dataset).numpy()
+            if total_batches == tf.data.UNKNOWN_CARDINALITY:
+                total_batches = None  # Fallback to unknown if size is not fixed
+        except Exception:
+            # Handle cases where cardinality might fail for some dataset types
+            total_batches = None
+
+        if total_batches is None:
+            print(
+                "Note: Dataset size is unknown. Progress bar will not show total batches."
+            )
+            tqdm_waitbar = tqdm.tqdm(
+                test_dataset, desc="Generating Captions from Dataset"
+            )
+        else:
+            tqdm_waitbar = tqdm.tqdm(
+                test_dataset,
+                total=total_batches,
+                desc="Generating Captions from Dataset",
+            )
+
+        # for batch in test_dataset:
+        for batch in tqdm_waitbar:
+            # (img_tensor, _, image_ids) = batch  # Assumes 3-tuple from data loader
+            # Unpack the outer 2-tuple: (input_tuple, target_tensor)
+            (input_features_tuple, _) = batch
+            # Unpack the inner 3-tuple: (image, caption_input, image_id)
+            (img_tensor, _, image_ids) = input_features_tuple
+            # We discard caption_input using '_'
+            for i in range(len(image_ids)):
+                image_id = image_ids[i].numpy().decode("utf-8")
+                image_feature = img_tensor[i].numpy()
+                caption = generate_caption_greedy(
+                    model, tokenizer, image_feature, max_len
+                )
+                predictions_dict[image_id] = caption
+
+    else:
+        _, _, image_ids = test_dataset
+        for image_id in image_ids:
+            image_feature = features[image_id]
+            caption = generate_caption_greedy(model, tokenizer, image_feature, max_len)
+            predictions_dict[image_id] = caption
+
+    return evaluate_captions(references_dict, predictions_dict)
