@@ -10,9 +10,10 @@ data for sequence-to-sequence learning, and setting up batching and shuffling fo
 efficient data pipeline processing.
 """
 
+from typing import Optional, Tuple, Union
+
 import numpy as np
 import tensorflow as tf
-from typing import Tuple, Optional, Union
 
 
 def load_features_and_sequences(
@@ -22,12 +23,14 @@ def load_features_and_sequences(
     Load aligned image features and caption sequences from .npz files.
 
     Args:
-        features_path (str): Path to the .npz file of image features {image_id: feature_vector}.
+        features_path (str): Path to the .npz file of image features
+            {image_id: feature_vector}.
         captions_path (str): Path to the .npz file of padded caption sequences
                              {image_id: [sequence1, sequence2, ...]}.
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: Two NumPy arrays (features, captions), aligned 1:1.
+        Tuple[np.ndarray, np.ndarray]: Two NumPy arrays (features, captions),
+            aligned 1:1.
     """
     features_npz = np.load(features_path)
     captions_npz = np.load(captions_path, allow_pickle=True)
@@ -55,7 +58,8 @@ def prepare_dataset(dataset: tf.data.Dataset) -> tf.data.Dataset:
         dataset (tf.data.Dataset): A dataset of (image_feature, full_caption) pairs.
 
     Returns:
-        tf.data.Dataset: A dataset of ((image_feature, input_caption), target_caption) pairs.
+        tf.data.Dataset: A dataset of ((image_feature, input_caption), target_caption)
+            pairs.
     """
 
     def split_inputs_and_targets(img, caption):
@@ -124,8 +128,8 @@ def load_split_datasets(
     Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray],
 ]:
     """
-    Load features and captions, perform a train/val/test split, and return preprocessed tf.data.Datasets
-    or optionally the raw NumPy arrays.
+    Load features and captions, perform a train/val/test split, and return preprocessed
+    tf.data.Datasets or optionally the raw NumPy arrays.
 
     Args:
         features_path (str): Path to the .npz file with image features.
@@ -137,13 +141,14 @@ def load_split_datasets(
         buffer_size (int): Buffer size for shuffling. Defaults to 1000.
         seed (int, optional): Random seed for shuffling. Defaults to 42.
         cache (bool): Whether to cache the dataset in memory. Defaults to False.
-        return_numpy (bool): If True, return NumPy arrays instead of tf.data.Dataset objects. Defaults to False.
+        return_numpy (bool): If True, return NumPy arrays instead of tf.data.Dataset
+            objects. Defaults to False.
 
     Returns:
         If return_numpy is False:
             Tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]
         If return_numpy is True:
-            Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+            Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]  # noqa: E501
             (train_X, train_y, val_X, val_y, test_X, test_y)
     """
     image_features, caption_sequences = load_features_and_sequences(
@@ -187,10 +192,12 @@ def load_split_datasets(
         Args:
             features (np.ndarray): Image feature vectors.
             captions (np.ndarray): Corresponding padded caption sequences.
-            drop_remainder (bool): Whether to drop the last batch if it is smaller than `batch_size`.
+            drop_remainder (bool): Whether to drop the last batch if it is smaller than
+                `batch_size`.
 
         Returns:
-            tf.data.Dataset: A batched, prefetched dataset suitable for training or evaluation.
+            tf.data.Dataset: A batched, prefetched dataset suitable for training or
+                evaluation.
         """
         dataset = tf.data.Dataset.from_tensor_slices((features, captions))
         dataset = prepare_dataset(dataset)
@@ -207,7 +214,7 @@ def load_split_datasets(
     return (
         make_dataset(
             train_X, train_y, True
-        ),  # drop_remainder = True for training; needed to ensure consistent batch shape
+        ),  # drop_remainder = True for training to ensure consistent batch shape
         make_dataset(val_X, val_y, False),  # keep all data for validation
         make_dataset(test_X, test_y, False),  # keep all data for testing
     )

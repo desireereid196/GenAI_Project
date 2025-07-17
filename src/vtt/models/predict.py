@@ -5,18 +5,21 @@ This module provides functions for generating image captions using a trained
 image captioning model and displaying the results alongside their corresponding images.
 
 Key functionality includes:
-- Greedy decoding: Generate captions one token at a time by selecting the most probable word.
+- Greedy decoding: Generate captions one token at a time by selecting the most probable
+  word.
 - Visualization: Display images with predicted captions using matplotlib.
 
 Usage example:
     caption = generate_caption_greedy(model, tokenizer, features["image123.jpg"])
-    display_images_with_captions(["image123.jpg"], model, tokenizer, features, "data/flickr8k_images_dataset/Images")
+    display_images_with_captions(["image123.jpg"], model, tokenizer, features,
+        "data/flickr8k_images_dataset/Images")
 """
 
-import numpy as np
+from typing import Dict, List, Optional
+
 import matplotlib.pyplot as plt
+import numpy as np
 from PIL import Image
-from typing import List, Dict, Optional
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
@@ -35,7 +38,8 @@ def generate_caption_greedy(
         model (Model): Trained image captioning model.
         tokenizer (Tokenizer): Tokenizer used to encode/decode tokens.
         image_feature (np.ndarray): Precomputed image feature vector (shape: (2048,)).
-        max_len (Optional[int]): Maximum caption length. If None, inferred from model input.
+        max_len (Optional[int]): Maximum caption length. If None, inferred from model
+        input.
 
     Returns:
         str: Generated caption (excluding <startseq> and <endseq> tokens).
@@ -92,7 +96,8 @@ def display_images_with_captions(
         image_ids (List[str]): List of image filenames to visualize.
         model (Model): Trained captioning model.
         tokenizer (Tokenizer): Tokenizer used for caption generation.
-        features (Dict[str, np.ndarray]): Dictionary of precomputed image features keyed by image ID.
+        features (Dict[str, np.ndarray]): Dictionary of precomputed image features
+            keyed by image ID.
         image_folder (str): Path to the folder containing the original images.
     """
     for image_id in image_ids:

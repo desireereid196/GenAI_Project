@@ -20,10 +20,11 @@ Returns:
 """
 
 from typing import Dict, List
+
 from vtt.evaluation.metrics import (
+    compute_bertscore,
     compute_bleu_scores,
     compute_meteor_scores,
-    compute_bertscore,
 )
 
 
@@ -31,10 +32,12 @@ def evaluate_captions(
     references_dict: Dict[str, List[str]], predictions_dict: Dict[str, str]
 ) -> Dict[str, float]:
     """
-    Evaluate generated captions against reference captions using BLEU, METEOR, and BERTScore.
+    Evaluate generated captions against reference captions using BLEU, METEOR, and
+    BERTScore.
 
     Args:
-        references_dict (Dict[str, List[str]]): Mapping from image ID to a list of reference captions.
+        references_dict (Dict[str, List[str]]): Mapping from image ID to a list of
+            reference captions.
         predictions_dict (Dict[str, str]): Mapping from image ID to generated caption.
 
     Returns:

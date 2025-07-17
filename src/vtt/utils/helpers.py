@@ -14,6 +14,7 @@ Functionality:
 
 import os
 import random
+
 import numpy as np
 import tensorflow as tf
 
@@ -45,12 +46,14 @@ def detect_and_set_device() -> str:
                 print(f"Successfully configured GPU(s): {physical_devices}")
                 return "GPU"
             except RuntimeError as e:
-                # RuntimeError can occur if memory growth is set after device initialization
+                # RuntimeError can occur if memory growth is set after device
+                # initialization
                 print(f"Error setting GPU memory growth: {e}. Falling back to CPU.")
                 return "CPU"
         else:
             print(
-                "No GPU devices found despite TensorFlow being built with CUDA. Using CPU."
+                "No GPU devices found despite TensorFlow ",
+                "being built with CUDA. Using CPU.",
             )
             return "CPU"
     else:

@@ -10,9 +10,10 @@ accuracy, etc.) over epochs. These plots are useful for diagnosing issues like
 overfitting, underfitting, and convergence behavior.
 """
 
+from typing import Sequence, Tuple
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-from typing import Tuple, Sequence
 from tensorflow.keras.callbacks import History
 
 

@@ -1,7 +1,9 @@
 """
 decoder.py
 
-This module defines the architecture for the decoder component of an image captioning system.
+This module defines the architecture for the decoder component of an image captioning
+system.
+
 The decoder receives:
     - A precomputed image embedding (e.g., from ResNet-50)
     - A sequence of tokenized caption inputs
@@ -20,8 +22,8 @@ Typical use:
 """
 
 import tensorflow as tf
+from tensorflow.keras.layers import LSTM, Concatenate, Dense, Embedding, Input, Lambda
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense, Embedding, LSTM, Concatenate, Lambda
 
 
 def build_decoder_model(
@@ -66,7 +68,8 @@ def build_decoder_model(
     )(caption_input)
 
     # ----- Merge Inputs -----
-    # Concatenate along time axis: output shape (batch_size, max_caption_len+1, embedding_dim)
+    # Concatenate along time axis:
+    # output shape (batch_size, max_caption_len+1, embedding_dim)
     merged = Concatenate(axis=1, name="merge_image_caption")([img_emb, caption_emb])
 
     # ----- Sequence Modeling -----
@@ -84,7 +87,9 @@ def build_decoder_model(
 
     # ----- Compile Model -----
     model = Model(
-        inputs=[img_input, caption_input], outputs=output, name="ImageCaptionDecoder"
+        inputs=[img_input, caption_input],
+        outputs=output,
+        name="ImageCaptionDecoder",
     )
     model.compile(loss="sparse_categorical_crossentropy", optimizer="adam")
 

@@ -8,15 +8,16 @@ padding, and saving/loading captions in various formats.
 """
 
 import os
-import re
-from typing import Dict, List, Set, Tuple
-from collections import defaultdict, Counter
-import numpy as np
-from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
-from tensorflow.keras.preprocessing.sequence import pad_sequences
 import pickle
-import json
-from vtt.utils.config import START_TOKEN, END_TOKEN, OOV_TOKEN
+import re
+from collections import Counter, defaultdict
+from typing import Dict, List, Set, Tuple
+
+import numpy as np
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
+
+from vtt.utils.config import END_TOKEN, OOV_TOKEN, START_TOKEN
 
 
 def clean_caption(text: str) -> str:
