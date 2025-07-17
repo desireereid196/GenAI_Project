@@ -1,3 +1,5 @@
+# pyproject.toml
+
 [project]
 name = "vtt"
 version = "0.1.0"
@@ -60,3 +62,37 @@ build-backend = "setuptools.build_meta"
 # Find packages within the 'src' directory
 [tool.setuptools.packages.find]
 where = ["src"] # Look for packages in the 'src' directory
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+  | __pycache__
+  | notebooks
+  | data
+  | .*\.ipynb
+)/
+'''
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = [
+    "E203",  # whitespace before ':', handled by black
+    "W503",  # line break before binary operator, handled by black
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    "notebooks",
+    "data",
+    "*.ipynb"
+]

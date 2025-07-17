@@ -18,11 +18,11 @@ This project bridges **Computer Vision** and **Natural Language Processing**, fo
 **VTT (Vision-to-Text)** is a modular deep learning pipeline for image captioning that translates visual content into coherent, semantically meaningful natural language descriptions. It combines computer vision (CV) and natural language processing (NLP) techniques via an encoder-decoder architecture using ResNet-50 and LSTM networks.
 
 This project supports both the **[Flickr8k](https://www.kaggle.com/datasets/adityajn105/flickr8k)** and **[Flickr30k](https://www.kaggle.com/datasets/awsaf49/flickr30k-dataset)** datasets and includes tools for:
+
 - Image preprocessing & feature extraction
 - Caption tokenization, filtering, and padding
 - Training-ready sequence generation
 - Metric-based and qualitative evaluation
-
 
 ## 📁 Repository Structure
 
@@ -132,12 +132,15 @@ pre-commit install
 Important Note: Collaborators only need to run pre-commit install once per local clone of the repository.
 
 ## 📄 License
+
 MIT License — feel free to use, share, and modify.
 
 ## 🤝 Contributing
+
 Pull requests welcome! For major changes, please open an issue first to discuss what you’d like to change.
 
 ## 🧠 Project Maintainers
+
 - [Curtis Neiderer](mailto:neiderer.c@northeastern.edu)
 - [Divya Maheshkumar](maheshkumar.d@northeastern.edu)
 - [Desiree Reed](reed.des@northeastern.edu)

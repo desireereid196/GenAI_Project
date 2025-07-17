@@ -7,11 +7,13 @@ for saving and loading these extracted features to/from compressed NumPy `.npz` 
 """
 
 import os
+
 import numpy as np
-from tqdm import tqdm
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing import image
+from tqdm import tqdm
+
 from vtt.utils.config import IMAGE_SIZE, IMAGENET_MEAN, IMAGENET_STD
 
 
@@ -144,7 +146,8 @@ def extract_features_in_batches(
             continue
 
         tqdm.write(
-            f"[INFO] Processing batch {batch_idx + 1} of {total_batches} ({len(batch_image_names)} images)"
+            f"[INFO] Processing batch {batch_idx + 1} of ",
+            "{total_batches} ({len(batch_image_names)} images)",
         )
 
         batch_features = extract_features_from_filenames(image_dir, batch_image_names)

@@ -23,22 +23,63 @@ repos:
                             # Adjust this value based on your project's needs.
                             # Common values might be 100 (0.1MB) to 1024 (1MB) or more.
 
+# --- Code Formatting Hooks (Python & Notebooks) --- #
   # Add Black for code formatting
   - repo: https://github.com/psf/black
     rev: 25.1.0 
     hooks:
       - id: black
+        language: python
         # Optional: You can add args if you want to customize Black's behavior, e.g., line length
-        # args: ["--line-length=88"]
+        args: ["--line-length=88"]
         stages: [manual]
 
-  # Add nbqa black for Notebook formatting
+  # Add nbqa black and flake8 for notebook formatting
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.9.1 # Use the latest stable version of nbQA (check nbQA-dev/nbQA releases for the latest)
     hooks:
       - id: nbqa-black
+        language: python
         # nbqa hooks automatically target .ipynb files.
         # You can pass arguments to black via nbqa's --nbqa-args flag if needed.
         # For example, to set line length for black within notebooks:
-        # args: ["--nbqa-args=--line-length=88"]
+        args: ["--line-length=88"]
+        stages: [manual]
+        
+  # isort (Import Sorter)
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2 # Use the latest stable version (check isort's GitHub releases)
+    hooks:
+      - id: isort
+        args: ["--profile", "black"] # VERY IMPORTANT: Tells isort to use Black's profile for compatibility
+        # Optional: You can also specify line length here if it differs from Black,
+        # but --profile black usually handles this.
+        # args: ["--profile", "black", "--line-length", "88"]
+        stages: [manual]
+
+# --- Linting Hooks (Python & Notebooks) --- #
+  # Add flake8 for linting
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.1.0 # Use the latest stable version available (check PyCQA/flake8 releases on GitHub)
+    hooks:
+      - id: flake8
+        # Optional: Add arguments to Flake8 directly here.
+        # Arguments specified here will override or add to settings in your .flake8 or pyproject.toml
+        # args:
+        #   - --max-line-length=88 # Example: enforce a specific line length
+        #   - --ignore=E203,W503  # Example: ignore specific error codes (common with Black)
+        #   - --max-complexity=10 # Example: set max cyclomatic complexity
+        # args:
+        #   - --max-line-length=88 # Match your desired line length
+        #   - --ignore=E203,W503 # Common ignores when using Black (and isort)
+        args: ["--max-line-length=88", "--ignore=E203,W503"]
+        stages: [manual]
+
+  # Add nbqa black and flake8 for notebook formatting
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.9.1 # Use the latest stable version of nbQA (check nbQA-dev/nbQA releases for the latest)
+    hooks:
+      - id: nbqa-flake8
+        language: python
+        args: ["--nbqa-mutate", "--max-line-length=88", "--ignore=E203,W503"]
         stages: [manual]

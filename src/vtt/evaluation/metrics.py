@@ -18,12 +18,13 @@ Dependencies:
 - bert-score
 """
 
-import nltk
-from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
-from nltk.translate.meteor_score import meteor_score
-from typing import List, Dict
+from typing import Dict, List
+
 import bert_score
+import nltk
 import numpy as np
+from nltk.translate.bleu_score import SmoothingFunction, sentence_bleu
+from nltk.translate.meteor_score import meteor_score
 
 
 def ensure_nltk_resources():

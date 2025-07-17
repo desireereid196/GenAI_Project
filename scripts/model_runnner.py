@@ -15,7 +15,7 @@ os.makedirs(output_dir, exist_ok=True)
 df = pd.read_csv(caption_path)
 
 # Group captions by image
-image_caption_map = df.groupby('image')['caption'].apply(list).to_dict()
+image_caption_map = df.groupby("image")["caption"].apply(list).to_dict()
 
 # Shuffle and split
 image_list = list(image_caption_map.keys())
@@ -26,10 +26,10 @@ train_images = image_list[:split_idx]
 val_images = image_list[split_idx:]
 
 # Save splits
-with open(train_file, 'w') as f:
-    f.write('\n'.join(train_images))
+with open(train_file, "w") as f:
+    f.write("\n".join(train_images))
 
-with open(val_file, 'w') as f:
-    f.write('\n'.join(val_images))
+with open(val_file, "w") as f:
+    f.write("\n".join(val_images))
 
 print(f"✅ CSV Split complete: {len(train_images)} train, {len(val_images)} val")
