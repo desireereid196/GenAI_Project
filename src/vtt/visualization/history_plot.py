@@ -32,7 +32,7 @@ def plot_training_history(
 
     Args:
         history (History): The `History` object returned by `model.fit()`, which
-                           contains training and validation metrics for each epoch.
+                            contains training and validation metrics for each epoch.
         metrics (Sequence[str]): A list or tuple of metric names to plot
                                  (e.g., ("loss", "accuracy")). Defaults to ("loss",).
         figsize (Tuple[int, int]): Size of the figure in inches. Defaults to (8, 4).
@@ -47,6 +47,28 @@ def plot_training_history(
 
     hist = history.history
 
+    # Determine the number of epochs
+    # Safely get the length of any non-empty metric list to determine num_epochs
+    num_epochs = 0
+    if hist:
+        # Get the first metric list that exists to determine the number of epochs
+        for metric_list in hist.values():
+            if metric_list:  # Ensure the list itself is not empty
+                num_epochs = len(metric_list)
+                break
+
+    if num_epochs == 0:
+        print("No training data found in history object. Plotting empty.")
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.set_title("Training History (No Data)")
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Metric")
+        fig.tight_layout()
+        plt.show()
+        return
+
+    epochs = range(num_epochs)
+
     # Initialize figure and axis
     fig, ax = plt.subplots(figsize=figsize)
 
@@ -57,12 +79,24 @@ def plot_training_history(
             continue
 
         # Plot training metric
-        ax.plot(hist[metric], label=f"Train {metric.title()}")
+        ax.plot(
+            epochs,
+            hist[metric],
+            "o-",
+            markersize=6,
+            label=f"Train {metric.title()}",
+        )
 
         # Plot validation metric if available
         val_metric = f"val_{metric}"
         if val_metric in hist:
-            ax.plot(hist[val_metric], label=f"Val {metric.title()}")
+            ax.plot(
+                epochs,
+                hist[val_metric],
+                "o-",
+                markersize=6,
+                label=f"Val {metric.title()}",
+            )
 
     # Axis labels and title
     ax.set_xlabel("Epoch")
@@ -70,8 +104,34 @@ def plot_training_history(
     ax.set_title("Training History")
     ax.legend()
     ax.grid(grid)
+
     # Ensure x-ticks are on whole integers only
     ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+
+    # Adjust x-axis limits for single epoch to clearly show the point
+    if num_epochs == 1:
+        # Set x-limits to slightly before and after the epoch index 0
+        ax.set_xlim(-0.5, 0.5)
+        # Ensure only 0 is shown as a tick
+        ax.set_xticks([0])
+        # Also adjust y-axis limits to give the point some vertical space
+        min_val = float("inf")
+        max_val = float("-inf")
+        for metric in metrics:
+            if metric in hist and hist[metric]:  # Check if metric exists and has data
+                min_val = min(min_val, hist[metric][0])
+                max_val = max(max_val, hist[metric][0])
+            val_metric = f"val_{metric}"
+            if (
+                val_metric in hist and hist[val_metric]
+            ):  # Check if val_metric exists and has data
+                min_val = min(min_val, hist[val_metric][0])
+                max_val = max(max_val, hist[val_metric][0])
+
+        if min_val != float("inf") and max_val != float("-inf"):
+            # Add a small padding, adjust if min_val and max_val are the same
+            padding = (max_val - min_val) * 0.2 if (max_val - min_val) > 0 else 0.1
+            ax.set_ylim(min_val - padding, max_val + padding)
 
     # Display the plot
     fig.tight_layout()
