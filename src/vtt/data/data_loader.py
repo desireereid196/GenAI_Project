@@ -94,6 +94,13 @@ def load_split_datasets(
     test_size = int(test_split * total)
     train_size = total - val_size - test_size
 
+    print("\n--- Dataset Split Sizes (number of individual samples) ---")
+    print(f"Total samples loaded: {total}")
+    print(f"Train samples: {train_size}")
+    print(f"Validation samples: {val_size}")
+    print(f"Test samples: {test_size}")
+    print("----------------------------------------------------------\n")
+
     train_X, train_y, train_ids = (
         image_features[:train_size],
         caption_sequences[:train_size],

@@ -5,12 +5,17 @@ This module defines the training routine for the image captioning decoder model.
 
 Features:
 - Trains using a TensorFlow `tf.data.Dataset`
+- Ignores image_id (used for evaluation only) during training
 - Supports early stopping based on validation loss
 - Saves best model weights during training
 
 Typical usage:
     history = train_model(
-        dataset, model, epochs=20, checkpoint_path="models/decoder.ckpt"
+        dataset=train_ds,
+        model=decoder,
+        epochs=20,
+        checkpoint_path="models/decoder.ckpt",
+        val_dataset=val_ds,
     )
 """
 
@@ -35,7 +40,7 @@ def train_model(
 
     Args:
         dataset (tf.data.Dataset): Training data yielding
-            ((image_features, input_caption), target_caption) tuples.
+            ((image_tensor, input_caption_tensor, image_id), target_caption_tensor).
         model (tf.keras.Model): A compiled Keras model (e.g., ImageCaptionDecoder).
         epochs (int): Number of epochs to train. Defaults to 10.
         checkpoint_path (str): Path to save the best model weights.
@@ -46,13 +51,26 @@ def train_model(
     Returns:
         tf.keras.callbacks.History: Keras training history object.
     """
-    # Build model by calling it once with dummy input
+
+    # Dummy call to build model (eager mode)
     for dummy_inputs, _ in dataset.take(1):
-        dummy_img, dummy_caption = dummy_inputs
+        dummy_img, dummy_caption, _ = dummy_inputs  # Discard image_id
         model((dummy_img, dummy_caption), training=False)
         break
 
-    # Setup callbacks
+    # Define a function to strip image_id from each batch
+    def strip_image_id(inputs, target):
+        image_tensor, input_caption, _ = inputs
+        return (image_tensor, input_caption), target
+
+    # Apply mapping to strip image_id from dataset
+    dataset = dataset.map(strip_image_id, num_parallel_calls=tf.data.AUTOTUNE)
+    if val_dataset:
+        val_dataset = val_dataset.map(
+            strip_image_id, num_parallel_calls=tf.data.AUTOTUNE
+        )
+
+    # Define callbacks
     monitor_metric = "val_loss" if val_dataset else "loss"
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(
@@ -64,7 +82,6 @@ def train_model(
             verbose=1,
         )
     ]
-
     if early_stop_patience is not None:
         callbacks.append(
             tf.keras.callbacks.EarlyStopping(
