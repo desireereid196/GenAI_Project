@@ -10,6 +10,7 @@ padding, and saving/loading captions in various formats.
 import os
 import pickle
 import re
+import json
 from collections import Counter, defaultdict
 from typing import Dict, List, Set, Tuple
 
@@ -277,3 +278,44 @@ def load_tokenizer(filepath: str) -> Tokenizer:
         return tokenizer
     else:
         raise ValueError("Unsupported file format. Use .pkl or .json")
+
+
+def build_raw_captions_dict_from_csv(captions_csv_path: str) -> Dict[str, List[str]]:
+    """
+    Reads a CSV file and builds a dictionary mapping image IDs to lists of captions.
+
+    Args:
+        captions_csv_path (str): Path to the CSV file with columns [image_id, caption].
+
+    Returns:
+        Dict[str, List[str]]: A dictionary mapping image_id to a list of its captions.
+    """
+    captions_dict = defaultdict(list)
+
+    with open(captions_csv_path, mode="r", encoding="utf-8") as csvfile:
+        reader = csv.reader(csvfile)
+        header = next(reader)  # Skip header
+        for row in reader:
+            if len(row) != 2:
+                continue  # Skip malformed rows
+            image_id, caption = row
+            captions_dict[image_id].append(caption.strip())
+
+    return dict(captions_dict)
+
+
+def load_captions_dict(captions_path: str) -> Dict[str, List[str]]:
+    """
+    Loads a JSON file of cleaned captions and returns a dictionary
+    mapping image_id to a list of reference captions.
+
+    Args:
+        captions_path (str): Path to the JSON file containing captions.
+
+    Returns:
+        Dict[str, List[str]]: Dictionary of image_id -> list of captions.
+    """
+    with open(captions_path, "r") as f:
+        captions_data = json.load(f)
+
+    return captions_data
