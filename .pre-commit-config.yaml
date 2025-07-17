@@ -43,10 +43,9 @@ repos:
         # nbqa hooks automatically target .ipynb files.
         # You can pass arguments to black via nbqa's --nbqa-args flag if needed.
         # For example, to set line length for black within notebooks:
-        args: ["--nbqa-args=--line-length=88"]
+        args: ["--line-length=88"]
         stages: [manual]
         
-
   # isort (Import Sorter)
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2 # Use the latest stable version (check isort's GitHub releases)
@@ -70,9 +69,10 @@ repos:
         #   - --max-line-length=88 # Example: enforce a specific line length
         #   - --ignore=E203,W503  # Example: ignore specific error codes (common with Black)
         #   - --max-complexity=10 # Example: set max cyclomatic complexity
-        args:
-          - --max-line-length=88 # Match your desired line length
-          - --ignore=E203,W503 # Common ignores when using Black (and isort)
+        # args:
+        #   - --max-line-length=88 # Match your desired line length
+        #   - --ignore=E203,W503 # Common ignores when using Black (and isort)
+        args: ["--max-line-length=88", "--ignore=E203,W503"]
         stages: [manual]
 
   # Add nbqa black and flake8 for notebook formatting
@@ -81,5 +81,5 @@ repos:
     hooks:
       - id: nbqa-flake8
         language: python
-        args: ["--nbqa-mutate"]
+        args: ["--nbqa-mutate", "--max-line-length=88", "--ignore=E203,W503"]
         stages: [manual]
