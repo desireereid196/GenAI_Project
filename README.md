@@ -13,6 +13,22 @@ This project bridges **Computer Vision** and **Natural Language Processing**, fo
 - LSTM-based language modeling
 - Embedding-based and generative evaluation metrics
 
+## 🧾 Background
+
+Image captioning combines vision and language modeling and has been widely studied in recent years. Traditional approaches used template-based methods, but the field shifted significantly with the introduction of deep learning.
+
+A foundational model, *Show and Tell* by **Vinyals et al. (2015)**, introduced an encoder-decoder architecture using CNNs to process images and RNNs to generate captions. This was extended by **Xu et al. (2015)** with *Show, Attend and Tell*, which added attention mechanisms to improve relevance and interpretability by focusing on image regions during captioning.
+
+Recent progress includes **BLIP** (*Li et al., 2022*), which unified vision-language pretraining to support both understanding and generation tasks. **BLIP-2** (*Li et al., 2023*) advanced this further by using a frozen image encoder and a large language model decoder, improving modularity and performance on multimodal tasks.
+
+### 🔗 References
+
+1. Vinyals et al. (2015). *Show and Tell*. [arXiv:1411.4555](https://arxiv.org/abs/1411.4555)  
+2. Xu et al. (2015). *Show, Attend and Tell*. [arXiv:1502.03044](https://arxiv.org/abs/1502.03044)  
+3. Li et al. (2022). *BLIP*. [arXiv:2201.12086](https://arxiv.org/abs/2201.12086)  
+4. Li et al. (2023). *BLIP-2*. [arXiv:2301.12597](https://arxiv.org/abs/2301.12597)  
+5. Luo et al. (2022). *A Frustratingly Simple Approach*. [arXiv:2201.12723](https://arxiv.org/abs/2201.12723)  
+
 ## 📌 Description
 
 **VTT (Vision-to-Text)** is a modular deep learning pipeline for image captioning that translates visual content into coherent, semantically meaningful natural language descriptions. It combines computer vision (CV) and natural language processing (NLP) techniques via an encoder-decoder architecture using ResNet-50 and LSTM networks.
