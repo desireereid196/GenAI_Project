@@ -23,6 +23,11 @@ from PIL import Image
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
+from PIL import Image
+from typing import List, Dict
+import os
+import textwrap
+import math
 
 
 def generate_caption_greedy(
@@ -82,39 +87,156 @@ def generate_caption_greedy(
     return " ".join(words).strip()
 
 
-def display_images_with_captions(
-    image_ids: List[str],
-    model: Model,
-    tokenizer: Tokenizer,
-    features: Dict[str, np.ndarray],
-    image_folder: str,
-) -> None:
-    """
-    Displays each image with its predicted caption.
+def generate_caption_beam(model, tokenizer, image_feature, 
+                          max_len, beam_width=3):
+    """Generate a caption using beam search.
 
     Args:
-        image_ids (List[str]): List of image filenames to visualize.
-        model (Model): Trained captioning model.
-        tokenizer (Tokenizer): Tokenizer used for caption generation.
-        features (Dict[str, np.ndarray]): Dictionary of precomputed image features
-            keyed by image ID.
-        image_folder (str): Path to the folder containing the original images.
+        model: Trained image captioning model.
+        tokenizer: Tokenizer used to encode/decode tokens.
+        image_feature (np.ndarray): Precomputed image feature vector.
+        max_len (int): Maximum length of the generated caption.
+        beam_width (int, optional): Beam width for beam search. Defaults to 3.
+
+    Returns:
+        str: Generated caption (excluding <startseq> and <endseq> tokens).
     """
-    for image_id in image_ids:
+    start_seq = [tokenizer.word_index["startseq"]]
+    sequences = [(start_seq, 0.0)]
+
+    end_token = tokenizer.word_index["endseq"]
+
+    for _ in range(max_len):
+        all_candidates = []
+        for seq, score in sequences:
+            # stop expanding if last token is <endseq>
+            if seq[-1] == end_token:
+                all_candidates.append((seq, score))
+                continue
+
+            pad_seq = pad_sequences(
+                [seq], maxlen=max_len, padding="post"
+            )
+            preds = model.predict([image_feature[None, :], pad_seq], verbose=0)[0]
+            preds = preds[len(seq)-1]              # current timestep
+
+            # take top beam_width predictions
+            top_ids = np.argsort(preds)[-beam_width:]
+            for wid in top_ids:
+                candidate = (seq + [wid], score + np.log(preds[wid] + 1e-10))
+                all_candidates.append(candidate)
+
+        # keep beam_width best
+        sequences = sorted(all_candidates, key=lambda tup: tup[1], reverse=True)[:beam_width]
+
+    # return the sequence with highest score
+    best_seq = sequences[0][0]
+
+    # convert to words, drop <startseq>/<endseq>
+    words = [tokenizer.index_word.get(i, "") for i in best_seq 
+             if i not in (start_seq[0], end_token, 0)]
+    return " ".join(words).strip()
+
+
+def _plot_images_with_captions(
+    image_ids: List[str],
+    captions: List[str],
+    image_folder: str,
+    cols: int = 3,
+    title: str = "Generated Captions"
+) -> None:
+    """
+    Plot images and captions in a grid layout, handling spacing and wrapping.
+
+    Args:
+        image_ids (List[str]): List of image filenames.
+        captions (List[str]): Corresponding captions for each image.
+        image_folder (str): Path to the folder containing the images.
+        cols (int, optional): Number of columns in the grid. Defaults to 3.
+        title (str, optional): Overall title for the plot. Defaults to "Generated Captions".
+
+    Returns:
+        None
+    """
+    rows = math.ceil(len(image_ids) / cols)
+    plt.figure(figsize=(cols * 5, rows * 5))
+
+    for i, (image_id, caption) in enumerate(zip(image_ids, captions), 1):
         try:
-            # Get image feature and generate caption
-            image_feature = features[image_id]
-            caption = generate_caption_greedy(model, tokenizer, image_feature)
+            img_path = os.path.join(image_folder, image_id)
+            img = Image.open(img_path)
 
-            # Load and display the image
-            image_path = f"{image_folder}/{image_id}"
-            img = Image.open(image_path)
+            ax = plt.subplot(rows, cols, i)
+            ax.imshow(img)
+            ax.axis("off")
 
-            plt.figure(figsize=(6, 6))
-            plt.imshow(img)
-            plt.axis("off")
-            plt.title(caption, fontsize=12)
-            plt.show()
+            # Wrap caption to avoid overlap
+            wrapped_caption = "\n".join(textwrap.wrap(caption, width=40))
+            ax.set_title(wrapped_caption, fontsize=10)
 
         except Exception as e:
             print(f"Error displaying {image_id}: {e}")
+
+    plt.suptitle(title, fontsize=16)
+    
+    # Adjust spacing to avoid title/caption overlap
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.90, hspace=0.4)
+    plt.show()
+
+
+def display_images_with_greedy_captions(
+    image_ids: List[str],
+    model,
+    tokenizer,
+    features: Dict[str, np.ndarray],
+    image_folder: str,
+    cols: int = 3,
+) -> None:
+    """
+    Wrapper to generate and display image captions using greedy decoding.
+
+    """
+
+    captions = []
+    for image_id in image_ids:
+        feature = features[image_id]
+        caption = generate_caption_greedy(model, tokenizer, feature)
+        caption = caption.replace("startseq", "").replace("endseq", "").strip()
+        captions.append(caption)
+
+    _plot_images_with_captions(
+        image_ids=image_ids,
+        captions=captions,
+        image_folder=image_folder,
+        cols=cols,
+        title="Greedy Captions"
+    )
+
+def display_images_with_beam_captions(
+    image_ids: List[str],
+    model,
+    tokenizer,
+    features: Dict[str, np.ndarray],
+    image_folder: str,
+    beam_width: int = 5,
+    max_len: int = 20,
+    cols: int = 3,
+) -> None:
+    """
+    Wrapper to generate and display image captions using beam search decoding.
+    """
+    captions = []
+    for image_id in image_ids:
+        feature = features[image_id]
+        caption = generate_caption_beam(model, tokenizer, feature, max_len, beam_width)
+        caption = caption.replace("startseq", "").replace("endseq", "").strip()
+        captions.append(caption)
+
+    _plot_images_with_captions(
+        image_ids=image_ids,
+        captions=captions,
+        image_folder=image_folder,
+        cols=cols,
+        title=f"Beam Search Captions (beam={beam_width})"
+    )
