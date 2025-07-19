@@ -119,15 +119,9 @@ def load_split_datasets(
 
     if return_numpy:
         return (
-            train_X,
-            train_y,
-            train_ids,
-            val_X,
-            val_y,
-            val_ids,
-            test_X,
-            test_y,
-            test_ids,
+            (train_X, train_y, train_ids),
+            (val_X, val_y, val_ids),
+            (test_X, test_y, test_ids),
         )
 
     def make_dataset(
