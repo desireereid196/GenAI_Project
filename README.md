@@ -28,11 +28,11 @@ This project supports both the **[Flickr8k](https://www.kaggle.com/datasets/adit
 
 Here is a comparative summary of the performance across models.
 
-| Model Variant     | BLEU-1 | BLEU-4 | METEOR | BERTScore (F1) |
-|-------------------|--------|--------|--------|----------------|
-| Beam Search (k=5) | 0.4712 | 0.1199 | 0.2675 | 0.8725         |
-| Greedy Decoding   | 0.4705 | 0.1126 | 0.2661 | 0.8699         |
-| Random Captions   | X.XXXX | X.XXXX | X.XXXX | X.XXXX         |
+| Model Variant     | BLEU-1 | BLEU-2 | BLEU-3 | BLEU-4 | METEOR | BERTScore (P) | BERTScore (R) | BERTScore (F1) |
+| ----------------- | ------ | ------ | ------ | ------ | ------ | ------------- | ------------- | -------------- |
+| Beam Search (k=5) | 0.4712 | 0.2865 | 0.1778 | 0.1199 | 0.2675 | 0.8906        | 0.8552        | 0.8725         |
+| Greedy Decoding   | 0.4705 | 0.2836 | 0.1710 | 0.1126 | 0.2661 | 0.8854        | 0.8552        | 0.8699         |
+| Random Captions   | 0.1541 | 0.0531 | 0.0171 | 0.0105 | 0.0952 | 0.6542        | 0.5194        | 0.5674         |
 
 Beam search (k=5) improves BLEU-4 and BERTScore F1 over greedy decoding, indicating better fluency and semantic precision. Template-based captions perform better than random ones, but lack contextual relevance and specificity. All learned models outperform baselines across all metrics, demonstrating the effectiveness of the encoder-decoder architecture in generating meaningful image captions.
 
