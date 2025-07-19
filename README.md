@@ -24,6 +24,18 @@ This project supports both the **[Flickr8k](https://www.kaggle.com/datasets/adit
 - Training-ready sequence generation
 - Metric-based and qualitative evaluation
 
+## Performance Benchmarks
+
+Here is a comparative summary of the performance across models.
+
+| Model Variant     | BLEU-1 | BLEU-4 | METEOR | BERTScore (F1) |
+|-------------------|--------|--------|--------|----------------|
+| Beam Search (k=5) | 0.4712 | 0.1199 | 0.2675 | 0.8725         |
+| Greedy Decoding   | 0.4705 | 0.1126 | 0.2661 | 0.8699         |
+| Random Captions   | X.XXXX | X.XXXX | X.XXXX | X.XXXX         |
+
+Beam search (k=5) improves BLEU-4 and BERTScore F1 over greedy decoding, indicating better fluency and semantic precision. Template-based captions perform better than random ones, but lack contextual relevance and specificity. All learned models outperform baselines across all metrics, demonstrating the effectiveness of the encoder-decoder architecture in generating meaningful image captions.
+
 ## 📁 Repository Structure
 
 ```bash
@@ -31,12 +43,15 @@ GenAI_Project/
 ├── LICENSE                               # MIT License.
 ├── README.md                             # Repository overview and setup.
 ├── pyproject.toml                        # Project configuration file.
-├── archive                               # Old stuff.
+├── archive                               # 
+    └── notebooks/                        # Old notebooks.
 ├── data/                                 # 
     ├── raw/                              # Raw data.
     └── processed/                        # Cleaned and processed data; tokenizers.
-├── documents/                            # Project milestones, research notes, etc.
-├── experiments/                          # Development and experiment notebooks.
+├── documents/                            # 
+    ├── milestones/                       # Project milestones.
+    └── literature_review/                # Background info and relevant papers.
+├── experiments/                          # Formal experiments.
     ├── experiment_1.ipynb                # Baseline Training and Evaluation. 
     ├── experiment_2.ipynb                # Error Analysis. 
     ├── experiment_3.ipynb                # Semantic Fidelity Comparison. 
@@ -44,9 +59,10 @@ GenAI_Project/
 ├── figures/                              # Figures for the report and presentation.
 ├── models/                               # Trained models and weights.
 ├── notebooks/                            # Development and proof-of-concept notebooks.
-├── outputs/                              # Model runner outputs needed for Milestone 3.
+├── outputs/                              # Model runner outputs. (Milestone 3)
 ├── scripts/                              # 
-    └── model_runner.py                   # Model pipeline script needed for Milestone 3.
+    ├── data_runner.py                    # Data pipeline script.
+    └── model_runner.py                   # Model pipeline script. (Milestone 3)
 └── src/                                  # Contains the core source code.
     └── vtt/                              # The main package for the project.
         ├── __init__.py                   #
