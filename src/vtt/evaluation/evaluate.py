@@ -14,7 +14,7 @@ Usage:
 2. evaluate_model(): Generate predictions for a test set and evaluate.
 """
 
-from typing import Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
@@ -26,7 +26,7 @@ from vtt.evaluation.metrics import (
     compute_bleu_scores,
     compute_meteor_scores,
 )
-from vtt.models.predict import generate_caption_greedy
+from vtt.models.predict import generate_caption_greedy, generate_caption_beam
 
 
 def evaluate_captions(
@@ -65,7 +65,49 @@ def evaluate_captions(
     return scores
 
 
-def evaluate_model(
+
+def _evaluate_model_with_generator(
+    model: Model,
+    tokenizer: Tokenizer,
+    features: Dict[str, np.ndarray],
+    test_dataset: Union[tf.data.Dataset, Tuple[np.ndarray, np.ndarray, List[str]]],
+    references_dict: Dict[str, List[str]],
+    max_len: int,
+    caption_generator_fn: Callable[[Model, Tokenizer, np.ndarray, int], str],
+) -> Dict[str, float]:
+    """Generic evaluation function that uses a provided caption generation function."""
+    predictions_dict = {}
+
+    if isinstance(test_dataset, tf.data.Dataset):
+        try:
+            total_batches = tf.data.experimental.cardinality(test_dataset).numpy()
+            if total_batches == tf.data.UNKNOWN_CARDINALITY:
+                total_batches = None
+        except Exception:
+            total_batches = None
+
+        tqdm_bar = tqdm.tqdm(test_dataset, total=total_batches, desc="Evaluating")
+
+        for batch in tqdm_bar:
+            (input_features_tuple, _) = batch
+            (img_tensor, _, image_ids) = input_features_tuple
+
+            for i in range(len(image_ids)):
+                image_id = image_ids[i].numpy().decode("utf-8")
+                image_feature = img_tensor[i].numpy()
+                caption = caption_generator_fn(model, tokenizer, image_feature, max_len)
+                predictions_dict[image_id] = caption
+    else:
+        _, _, image_ids = test_dataset
+        for image_id in image_ids:
+            image_feature = features[image_id]
+            caption = caption_generator_fn(model, tokenizer, image_feature, max_len)
+            predictions_dict[image_id] = caption
+
+    return evaluate_captions(references_dict, predictions_dict)
+
+
+def evaluate_model_greedy(
     model: Model,
     tokenizer: Tokenizer,
     features: Dict[str, np.ndarray],
@@ -73,72 +115,34 @@ def evaluate_model(
     references_dict: Dict[str, List[str]],
     max_len: int,
 ) -> Dict[str, float]:
-    """
-    Generate captions from a model and evaluate them against reference captions.
+    return _evaluate_model_with_generator(
+        model=model,
+        tokenizer=tokenizer,
+        features=features,
+        test_dataset=test_dataset,
+        references_dict=references_dict,
+        max_len=max_len,
+        caption_generator_fn=generate_caption_greedy
+    )
 
-    Args:
-        model (Model): Trained image captioning model.
-        tokenizer (Tokenizer): Tokenizer used for encoding/decoding.
-        features (Dict[str, np.ndarray]): Image features keyed by image ID.
-        test_dataset (Union[tf.data.Dataset, Tuple[np.ndarray, np.ndarray, List[str]]]):
-            Either a batched tf.data.Dataset or tuple of (features, captions, image_ids).
-        references_dict (Dict[str, List[str]]): Reference captions for evaluation.
-        max_len (int): Maximum caption length for decoding.
 
-    Returns:
-        Dict[str, float]: Dictionary of evaluation scores.
-    """
-    predictions_dict = {}
-
-    if isinstance(test_dataset, tf.data.Dataset):
-
-        # Get total number of batches for tqdm if possible
-        total_batches = None
-        try:
-            # tf.data.experimental.cardinality() provides the number of batches
-            # if the dataset is finite and its size is known.
-            total_batches = tf.data.experimental.cardinality(test_dataset).numpy()
-            if total_batches == tf.data.UNKNOWN_CARDINALITY:
-                total_batches = None  # Fallback to unknown if size is not fixed
-        except Exception:
-            # Handle cases where cardinality might fail for some dataset types
-            total_batches = None
-
-        if total_batches is None:
-            print(
-                "Note: Dataset size is unknown. Progress bar will not show total batches."
-            )
-            tqdm_waitbar = tqdm.tqdm(
-                test_dataset, desc="Generating Captions from Dataset"
-            )
-        else:
-            tqdm_waitbar = tqdm.tqdm(
-                test_dataset,
-                total=total_batches,
-                desc="Generating Captions from Dataset",
-            )
-
-        # for batch in test_dataset:
-        for batch in tqdm_waitbar:
-            # (img_tensor, _, image_ids) = batch  # Assumes 3-tuple from data loader
-            # Unpack the outer 2-tuple: (input_tuple, target_tensor)
-            (input_features_tuple, _) = batch
-            # Unpack the inner 3-tuple: (image, caption_input, image_id)
-            (img_tensor, _, image_ids) = input_features_tuple
-            # We discard caption_input using '_'
-            for i in range(len(image_ids)):
-                image_id = image_ids[i].numpy().decode("utf-8")
-                image_feature = img_tensor[i].numpy()
-                caption = generate_caption_greedy(
-                    model, tokenizer, image_feature, max_len
-                )
-                predictions_dict[image_id] = caption
-
-    else:
-        _, _, image_ids = test_dataset
-        for image_id in image_ids:
-            image_feature = features[image_id]
-            caption = generate_caption_greedy(model, tokenizer, image_feature, max_len)
-            predictions_dict[image_id] = caption
-
-    return evaluate_captions(references_dict, predictions_dict)
+def evaluate_model_beam(
+    model: Model,
+    tokenizer: Tokenizer,
+    features: Dict[str, np.ndarray],
+    test_dataset: Union[tf.data.Dataset, Tuple[np.ndarray, np.ndarray, List[str]]],
+    references_dict: Dict[str, List[str]],
+    max_len: int,
+    beam_width: int = 5,
+) -> Dict[str, float]:
+    return _evaluate_model_with_generator(
+        model=model,
+        tokenizer=tokenizer,
+        features=features,
+        test_dataset=test_dataset,
+        references_dict=references_dict,
+        max_len=max_len,
+        caption_generator_fn=lambda m, t, f, l: generate_caption_beam(
+            m, t, f, l, beam_width=beam_width
+        )
+    )
