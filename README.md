@@ -56,6 +56,7 @@ The results demonstrate a clear progression from naive statistical baselines to 
     - Slightly lower BERTScore than the most common caption in P/R but more image-relevant.
 
 4. **Beam Search (k=5):**
+    - Generates captions by exploring multiple likely caption sequences at each timestep rather than committing to the single best word (as in greedy decoding). Maintains the top k most probable partial sequences (beams) throughout generation, expanding and pruning them based on cumulative log-probability.
     - Further improves upon greedy decoding, especially in BLEU-4 and BERTScore F1.
     - Indicates better fluency and more semantically aligned caption generation.
     - Best overall performance across metrics, balancing precision and contextual accuracy.
