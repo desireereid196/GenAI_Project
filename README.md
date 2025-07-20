@@ -56,7 +56,8 @@ The results demonstrate a clear progression from naive statistical baselines to 
     - Slightly lower BERTScore than the most common caption in P/R but more image-relevant.
 
 4. **Beam Search (k=5):**
-    - Generates captions by exploring multiple likely caption sequences at each timestep rather than committing to the single best word (as in greedy decoding). Maintains the top k most probable partial sequences (beams) throughout generation, expanding and pruning them based on cumulative log-probability.
+    - Generates captions by exploring multiple likely caption sequences at each timestep rather than committing to the single best word (as in greedy decoding).  
+    - It maintains the top k most probable partial sequences (beams) throughout generation, expanding and pruning them based on cumulative log-probability.
     - Further improves upon greedy decoding, especially in BLEU-4 and BERTScore F1.
     - Indicates better fluency and more semantically aligned caption generation.
     - Best overall performance across metrics, balancing precision and contextual accuracy.
@@ -66,7 +67,7 @@ The results demonstrate a clear progression from naive statistical baselines to 
 - Learned decoding strategies (Greedy and Beam) produce more accurate and image-specific captions than frequency-based or random ones.
 - Beam Search provides a small but consistent improvement over Greedy decoding across most metrics.
 - Frequency-based captions can perform deceptively well on semantic similarity metrics (especially BERTScore), but this doesn't reflect true caption quality for diverse images.
-- BLEU-4 is especially helpful in exposing the gap between trivial baselines and genuinely learned caption generation.
+- BLEU-4 is especially helpful in exposing the gap between naive statistical baselines and genuinely learned caption generation.
 
 ## 📁 Repository Structure
 
