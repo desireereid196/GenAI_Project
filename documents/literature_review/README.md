@@ -13,10 +13,10 @@ In this project, we implemented a classical CNN-RNN captioning pipeline. Image f
 
 ## References
 
-* Vinyals et al. (2015). [Show and Tell: A Neural Image Caption Generator](#show-and-tell-a-neural-image-caption-generator). (Source: <https://arxiv.org/abs/1411.4555>)
-* Xu et al. (2015). [Show, Attend and Tell: Neural Image Caption Generation with Visual Attention](#show-attend-and-tell-neural-image-caption-generation-with-visual-attention). (Source: <https://arxiv.org/abs/1502.03044>)
-* Luo et al. (2022) [A Frustratingly Simple Approach for End-to-End Image Captioning](#a-fustratingly-simple-approach-for-end-to-end-image-captioning). (Source: <https://arxiv.org/abs/2201.12723>)
-* Pennington et al. (2014). [GloVe: Global Vectors for Word Representation](#glove-global-vectors-for-word-representation). (Source: <https://aclanthology.org/D14-1162/>)
+* Vinyals et al. (2015). [Show and Tell: A Neural Image Caption Generator](#show-and-tell-a-neural-image-caption-generator). (Source: <https://arxiv.org/abs/1411.4555>, Retrieved: July 2025)
+* Xu et al. (2015). [Show, Attend and Tell: Neural Image Caption Generation with Visual Attention](#show-attend-and-tell-neural-image-caption-generation-with-visual-attention). (Source: <https://arxiv.org/abs/1502.03044>, Retrieved: July 2025)
+* Luo et al. (2022) [A Frustratingly Simple Approach for End-to-End Image Captioning](#a-fustratingly-simple-approach-for-end-to-end-image-captioning). (Source: <https://arxiv.org/abs/2201.12723>, Retrieved: July 2025)
+* Pennington et al. (2014). [GloVe: Global Vectors for Word Representation](#glove-global-vectors-for-word-representation). (Source: <https://aclanthology.org/D14-1162/>, Retrieved: July 2025)
 
 ### [Show and Tell: A Neural Image Caption Generator](https://arxiv.org/abs/1411.4555)
 
