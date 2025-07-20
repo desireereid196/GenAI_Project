@@ -26,20 +26,46 @@ This project supports both the **[Flickr8k](https://www.kaggle.com/datasets/adit
 
 ## 📊 Performance Benchmarks
 
-Here is a comparative summary of the performance across model variants.
+Comparative summary of the performance across model variants.
 
-| Model Variant     | BLEU-1 | BLEU-2 | BLEU-3 | BLEU-4 | METEOR | BERTScore (P) | BERTScore (R) | BERTScore (F1) |
-| ----------------- | ------ | ------ | ------ | ------ | ------ | ------------- | ------------- | -------------- |
-| Beam Search (k=5) | 0.4712 | 0.2865 | 0.1778 | 0.1199 | 0.2675 | 0.8906        | 0.8552        | 0.8725         |
-| Greedy Decoding   | 0.4705 | 0.2836 | 0.1710 | 0.1126 | 0.2661 | 0.8854        | 0.8552        | 0.8699         |
-| Random Captions   | 0.1541 | 0.0531 | 0.0171 | 0.0105 | 0.0952 | 0.6542        | 0.5194        | 0.5674         |
+| Model Variant | BLEU-1  | BLEU-2  | BLEU-3  | BLEU-4  | METEOR  | BERTScore (P) | BERTScore (R) | BERTScore (F1) |
+| :------------ | :------ | :------ | :------ | :------ | :------ | :------------ | :------------ | :------------- |
+| Random        | 0.3955  | 0.1748  | 0.0778  | 0.0474  | 0.258   | 0.8735        | 0.8733        | 0.8733         |
+| Most Common   | 0.4381  | 0.1852  | 0.0978  | 0.0659  | 0.2692  | 0.9002        | 0.8782        | 0.8890         |
+| Greedy Search | 0.4705  | 0.2836  | 0.1710  | 0.1126  | 0.2661  | 0.8854        | 0.8552        | 0.8699         |
+| Beam Search   | 0.4712  | 0.2865  | 0.1778  | 0.1199  | 0.2675  | 0.8906        | 0.8552        | 0.8725         |
 
 ### Interpretation
 
-- Models are Effective: Both Beam Search and Greedy Decoding strategies are highly effective at generating captions compared to a random baseline, demonstrating that your model is successfully learning the image-to-text mapping.
-- Beam Search is Marginally Better: Beam Search with k=5 is the preferred decoding strategy among the two tested, showing consistent, albeit small, improvements across all evaluation metrics. This indicates it produces slightly more fluent, grammatically correct, and semantically accurate captions.
-- High Semantic Quality: The high BERTScore F1 values for both Beam Search and Greedy Decoding (around 0.87) are very positive. This suggests that even if the generated captions don't perfectly match the exact wording of the references (as might be indicated by the lower absolute BLEU scores typical for these datasets), they do convey very similar meaning and context.
-- Context for BLEU Scores: The BLEU scores (especially BLEU-4) might appear relatively low in absolute terms, but this is common for image captioning tasks. Unlike machine translation, where there's often a single "correct" translation, an image can have many equally valid and diverse captions. Because BLEU is very strict on exact word and phrase matches, it tends to be lower for tasks with high reference variability. The high BERTScore values help confirm that despite lower BLEU, the semantic content is strong.
+The results demonstrate a clear progression from naive statistical baselines to learned generative models. The Random and Most Common baselines establish a performance floor and reveal the influence of dataset frequency bias. Greedy and Beam Search decoding show that the models are learning to produce more structured and contextually appropriate captions, indicating progress in fluency and grammatical correctness.
+
+1. **Random Caption:**
+    - Assigns a random caption from the training set to each test image with replacement, meaning some captions may be reused across multiple images.
+    - Performs the worst across all metrics.
+    - BLEU scores are especially low, reflecting minimal n-gram overlap with ground-truth captions.
+    - BERTScore remains deceptively high due to superficial word overlap, rather than genuine semantic alignment.
+
+2. **Most Common Caption:**
+    - Always predicts the single most frequent caption from the training data.
+    - Outperforms random captions on all metrics.
+    - Achieves strong BERTScore precision and recall—likely because the most common caption shares common words with many references, even though it's not image-specific.
+
+3. **Greedy Decoding:**
+    - Produces captions by selecting the highest probability word at each timestep.
+    - Improves significantly over baselines in BLEU-1 through BLEU-4 and METEOR.
+    - Slightly lower BERTScore than the most common caption in P/R but more image-relevant.
+
+4. **Beam Search (k=5):**
+    - Further improves upon greedy decoding, especially in BLEU-4 and BERTScore F1.
+    - Indicates better fluency and more semantically aligned caption generation.
+    - Best overall performance across metrics, balancing precision and contextual accuracy.
+
+**Key Takeaways:**
+
+- Learned decoding strategies (Greedy and Beam) produce more accurate and image-specific captions than frequency-based or random ones.
+- Beam Search provides a small but consistent improvement over Greedy decoding across most metrics.
+- Frequency-based captions can perform deceptively well on semantic similarity metrics (especially BERTScore), but this doesn't reflect true caption quality for diverse images.
+- BLEU-4 is especially helpful in exposing the gap between trivial baselines and genuinely learned caption generation.
 
 ## 📁 Repository Structure
 
@@ -72,6 +98,11 @@ GenAI_Project/
 └── src/                                  # Contains the core source code.
     └── vtt/                              # The main package for the project.
         ├── __init__.py                   #
+        ├── baselines/                    #
+            ├── __init__.py               #
+            ├── most_common_caption.py    # Most commmon trainin caption.
+            ├── nn_caption.py             # Nearest neighbor image caption.
+            └── random_caption.py         # Random training caption.
         ├── data/                         #
             ├── __init__.py               #
             ├── caption_preprocessing.py  # Caption cleaning/tokenization.
@@ -90,9 +121,9 @@ GenAI_Project/
             ├── __init__.py               #
             ├── config.py                 # Project configuration and dependencies.
             └── helpers.py                # Shared helper and utility functions.
-        └── visualization/
+        └── visualization/                #
             ├── __init__.py               #
-            └── history_plot.py           #
+            └── history_plot.py           # Training history plot.
 ```
 
 ## 🛠 Setup
