@@ -71,5 +71,6 @@ def set_seed(seed: int = 42) -> None:
     os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)
     np.random.seed(seed)
+    np.random.default_rng(seed)
     tf.random.set_seed(seed)
     print(f"Random seed set to {seed}")
