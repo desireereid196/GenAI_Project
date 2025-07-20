@@ -48,8 +48,9 @@ GenAI_Project/
 ├── LICENSE                               # MIT License.
 ├── README.md                             # Repository overview and setup.
 ├── pyproject.toml                        # Project configuration file.
-├── archive                               # 
-    └── notebooks/                        # Old notebooks.
+├── archive                               # Old stuff.
+    ├── scripts/                          # 
+    └── notebooks/                        #
 ├── data/                                 # 
     ├── raw/                              # Raw data.
     └── processed/                        # Cleaned and processed data; tokenizers.
@@ -62,12 +63,12 @@ GenAI_Project/
     ├── experiment_3.ipynb                # Semantic Fidelity Comparison. 
     └── experiment_4.ipynb                # Generalization. 
 ├── figures/                              # Figures for the report and presentation.
+    ├── eda/                              # Exploratory analysis.
+    ├── evaluation/                       # Performance evaluation.
 ├── models/                               # Trained models and weights.
 ├── notebooks/                            # Development and proof-of-concept notebooks.
-├── outputs/                              # Model runner outputs. (Milestone 3)
 ├── scripts/                              # 
     ├── data_runner.py                    # Data pipeline script.
-    └── model_runner.py                   # Model pipeline script. (Milestone 3)
 └── src/                                  # Contains the core source code.
     └── vtt/                              # The main package for the project.
         ├── __init__.py                   #
