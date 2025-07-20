@@ -34,7 +34,12 @@ Here is a comparative summary of the performance across models.
 | Greedy Decoding   | 0.4705 | 0.2836 | 0.1710 | 0.1126 | 0.2661 | 0.8854        | 0.8552        | 0.8699         |
 | Random Captions   | 0.1541 | 0.0531 | 0.0171 | 0.0105 | 0.0952 | 0.6542        | 0.5194        | 0.5674         |
 
-Beam search (k=5) improves BLEU-4 and BERTScore F1 over greedy decoding, indicating better fluency and semantic precision. Template-based captions perform better than random ones, but lack contextual relevance and specificity. All learned models outperform baselines across all metrics, demonstrating the effectiveness of the encoder-decoder architecture in generating meaningful image captions.
+### Interpretation
+
+- Models are Effective: Both Beam Search and Greedy Decoding strategies are highly effective at generating captions compared to a random baseline, demonstrating that your model is successfully learning the image-to-text mapping.
+- Beam Search is Marginally Better: Beam Search with k=5 is the preferred decoding strategy among the two tested, showing consistent, albeit small, improvements across all evaluation metrics. This indicates it produces slightly more fluent, grammatically correct, and semantically accurate captions.
+- High Semantic Quality: The high BERTScore F1 values for both Beam Search and Greedy Decoding (around 0.87) are very positive. This suggests that even if the generated captions don't perfectly match the exact wording of the references (as might be indicated by the lower absolute BLEU scores typical for these datasets), they do convey very similar meaning and context.
+- Context for BLEU Scores: The BLEU scores (especially BLEU-4) might appear relatively low in absolute terms, but this is common for image captioning tasks. Unlike machine translation, where there's often a single "correct" translation, an image can have many equally valid and diverse captions. Because BLEU is very strict on exact word and phrase matches, it tends to be lower for tasks with high reference variability. The high BERTScore values help confirm that despite lower BLEU, the semantic content is strong.
 
 ## 📁 Repository Structure
 
