@@ -26,7 +26,7 @@ This project supports both the **[Flickr8k](https://www.kaggle.com/datasets/adit
 
 ## 📊 Performance Benchmarks
 
-Here is a comparative summary of the performance across models.
+Here is a comparative summary of the performance across model variants.
 
 | Model Variant     | BLEU-1 | BLEU-2 | BLEU-3 | BLEU-4 | METEOR | BERTScore (P) | BERTScore (R) | BERTScore (F1) |
 | ----------------- | ------ | ------ | ------ | ------ | ------ | ------------- | ------------- | -------------- |
