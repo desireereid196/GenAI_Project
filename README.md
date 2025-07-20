@@ -24,7 +24,7 @@ This project supports both the **[Flickr8k](https://www.kaggle.com/datasets/adit
 - Training-ready sequence generation
 - Metric-based and qualitative evaluation
 
-## Performance Benchmarks
+## 📊 Performance Benchmarks
 
 Here is a comparative summary of the performance across models.
 
