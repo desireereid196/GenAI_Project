@@ -28,6 +28,11 @@ from typing import List, Dict
 import os
 import textwrap
 import math
+import logging
+
+
+# Configure module-specific logger
+logger = logging.getLogger(__name__)
 
 
 def generate_caption_greedy(
@@ -87,8 +92,7 @@ def generate_caption_greedy(
     return " ".join(words).strip()
 
 
-def generate_caption_beam(model, tokenizer, image_feature, 
-                          max_len, beam_width=3):
+def generate_caption_beam(model, tokenizer, image_feature, max_len, beam_width=3):
     """Generate a caption using beam search.
 
     Args:
@@ -114,11 +118,9 @@ def generate_caption_beam(model, tokenizer, image_feature,
                 all_candidates.append((seq, score))
                 continue
 
-            pad_seq = pad_sequences(
-                [seq], maxlen=max_len, padding="post"
-            )
+            pad_seq = pad_sequences([seq], maxlen=max_len, padding="post")
             preds = model.predict([image_feature[None, :], pad_seq], verbose=0)[0]
-            preds = preds[len(seq)-1]              # current timestep
+            preds = preds[len(seq) - 1]  # current timestep
 
             # take top beam_width predictions
             top_ids = np.argsort(preds)[-beam_width:]
@@ -127,14 +129,19 @@ def generate_caption_beam(model, tokenizer, image_feature,
                 all_candidates.append(candidate)
 
         # keep beam_width best
-        sequences = sorted(all_candidates, key=lambda tup: tup[1], reverse=True)[:beam_width]
+        sequences = sorted(all_candidates, key=lambda tup: tup[1], reverse=True)[
+            :beam_width
+        ]
 
     # return the sequence with highest score
     best_seq = sequences[0][0]
 
     # convert to words, drop <startseq>/<endseq>
-    words = [tokenizer.index_word.get(i, "") for i in best_seq 
-             if i not in (start_seq[0], end_token, 0)]
+    words = [
+        tokenizer.index_word.get(i, "")
+        for i in best_seq
+        if i not in (start_seq[0], end_token, 0)
+    ]
     return " ".join(words).strip()
 
 
@@ -143,7 +150,7 @@ def _plot_images_with_captions(
     captions: List[str],
     image_folder: str,
     cols: int = 3,
-    title: str = "Generated Captions"
+    title: str = "Generated Captions",
 ) -> None:
     """
     Plot images and captions in a grid layout, handling spacing and wrapping.
@@ -178,7 +185,7 @@ def _plot_images_with_captions(
             print(f"Error displaying {image_id}: {e}")
 
     plt.suptitle(title, fontsize=16)
-    
+
     # Adjust spacing to avoid title/caption overlap
     plt.tight_layout()
     plt.subplots_adjust(top=0.90, hspace=0.4)
@@ -210,8 +217,9 @@ def display_images_with_greedy_captions(
         captions=captions,
         image_folder=image_folder,
         cols=cols,
-        title="Greedy Captions"
+        title="Greedy Captions",
     )
+
 
 def display_images_with_beam_captions(
     image_ids: List[str],
@@ -238,5 +246,5 @@ def display_images_with_beam_captions(
         captions=captions,
         image_folder=image_folder,
         cols=cols,
-        title=f"Beam Search Captions (beam={beam_width})"
+        title=f"Beam Search Captions (beam={beam_width})",
     )
