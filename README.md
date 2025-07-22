@@ -229,8 +229,8 @@ Upon successful execution, the `model_runner.py` script will:
 
 - Load the preprocessed Flickr8k dataset.
 - Load the selected pretrained generative model (e.g., an encoder-decoder model).
-- Run inference on a small batch of representative samples (at least 5-10 images) from the dataset.
-- Save the generated sample captions to the `./outputs/sample_outputs/` directory. You should find text files or other relevant output formats containing the generated captions.
+- Run inference on a small batch of 10 representative samples from the dataset.
+- Save the generated sample captions to the `./outputs/model_runner_outputs/` directory. You should find text files or other relevant output formats containing the generated captions.
 
 This demonstrates the full pipeline, from input data to generated output, showcasing the model's ability to produce captions. The focus at this stage is on demonstrating a functional system, not necessarily on perfecting the output quality.
 
