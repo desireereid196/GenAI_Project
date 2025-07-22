@@ -90,14 +90,18 @@ GenAI_Project/
     ├── experiment_2.ipynb                # Error Analysis. 
     ├── experiment_3.ipynb                # Semantic Fidelity Comparison. 
     └── experiment_4.ipynb                # Generalization. 
-├── figures/                              # Figures for the report and presentation.
-    ├── eda/                              # Exploratory analysis.
-    ├── evaluation/                       # Performance evaluation.
-├── models/                               # Trained models and weights.
-├── notebooks/                            # Development and proof-of-concept notebooks.
+├── models/                               # Trained models and weights.       
+├── notebooks/                            # EDA, Development, and example notebooks.
+├── outputs/                              # 
+    ├── figures/                          # Figures for the report and presentation.
+        ├── eda/                          # Exploratory analysis.
+        └── evaluation/                   # Performance evaluation.
+    └── sample_outputs/                   # Model usage pipeline example outputs. (Milestone 3)
 ├── scripts/                              # 
     ├── data_runner.py                    # Data pipeline script.
+    └── model_runner.py                   # Model usage pipeline example script. (Milestone 3)
 └── src/                                  # Contains the core source code.
+    ├── __init__.py                       #
     └── vtt/                              # The main package for the project.
         ├── __init__.py                   #
         ├── baselines/                    #
@@ -105,11 +109,14 @@ GenAI_Project/
             ├── most_common_caption.py    # Most commmon trainin caption.
             ├── nn_caption.py             # Nearest neighbor image caption.
             └── random_caption.py         # Random training caption.
+        ├── config/                       #
+            ├── __init__.py               #
+            ├── config.py                 # Project configuration constants and parameters.   
         ├── data/                         #
             ├── __init__.py               #
             ├── caption_preprocessing.py  # Caption cleaning/tokenization.
-            ├── image_preprocessing.py    # Image feature extraction.
-            └── data_loader.py            # tf.data.Dataset loaders.
+            ├── data_loader.py            # Dataset loaders.
+            └── image_preprocessing.py    # Image feature extraction.            
         ├── evaluation/                   #
             ├── __init__.py               #
             ├── evaluate.py               # Evaluation logic for generated captions.
@@ -117,8 +124,9 @@ GenAI_Project/
         ├── models/                       #
             ├── __init__.py               #
             ├── decoder.py                # Model architecture definitions.
-            ├── train.py                  # Model training logic (training loop, checkpoint saving, etc.)     
-            └── predict.py                # Caption generation from trained model.
+            ├── io.py                     # Model saving and loading.                 
+            ├── predict.py                # Caption generation from trained model.
+            └── train.py                  # Model training logic (training loop, checkpoint saving, etc.)
         ├── utils/                        # 
             ├── __init__.py               #
             ├── config.py                 # Project configuration and dependencies.
@@ -136,7 +144,7 @@ Follow the steps below to set up the project locally for development, experiment
 
 ```bash
 git clone https://github.com/<your-username>/GenAi_Project.git
-cd GenAI_Project
+cd /path/to/your/GenAI_Project
 ```
 
 ### 2. Install Git LFS
@@ -161,7 +169,7 @@ conda activate genai_project
 Install the `vtt` package in editable (`-e`) mode so you can make changes to the source code and test them without reinstalling.
 
 ```bash
-# Ensure you are at the top-level of the GenAI_Project repository
+# Ensure you are at the top-level of the your cloned /GenAI_Project repository
 pip install -e .
 ```
 
@@ -186,6 +194,46 @@ pre-commit install
 
 Important Note: Collaborators only need to run pre-commit install once per local clone of the repository.
 
+## Model Usage Example
+
+This section guides you through executing the core model pipeline to generate preliminary image captions. The `model_runner.py` script demonstrates an end-to-end working system, from loading processed data to generating and saving sample outputs.
+
+### Prerequisites
+
+1. **Repository Clone:** Ensure you have cloned this repository to your local machine.
+2. **Environment Setup:** Follow the detailed [setup instructions](#-setup) to create and activate your Python environment, ensuring the `vtt` package and all its dependencies are correctly installed.
+
+### Execution Steps
+
+1. **Activate Environment:** Open a new terminal or command prompt and activate the Python environment you created during setup.
+
+    ```bash
+    conda activate your_env_name
+    ```
+
+2. **Navigate to Project Root:** Change your current directory to the top-level of the cloned repository (`/GenAI_Project`).
+
+    ```bash
+    cd /path/to/GenAI_Project
+    ```
+
+3. **Run Model Pipeline:** Execute the `model_runner.py` script.
+
+    ```bash
+    python ./scripts/model_runner.py
+    ```
+
+### Expected Behavior
+
+Upon successful execution, the `model_runner.py` script will:
+
+- Load the preprocessed Flickr8k dataset.
+- Load the selected pretrained generative model (e.g., an encoder-decoder model).
+- Run inference on a small batch of representative samples (at least 5-10 images) from the dataset.
+- Save the generated sample captions to the `./outputs/sample_outputs/` directory. You should find text files or other relevant output formats containing the generated captions.
+
+This demonstrates the full pipeline, from input data to generated output, showcasing the model's ability to produce captions. The focus at this stage is on demonstrating a functional system, not necessarily on perfecting the output quality.
+
 ## 📄 License
 
 MIT License — feel free to use, share, and modify.
@@ -197,8 +245,8 @@ Pull requests welcome! For major changes, please open an issue first to discuss 
 ## 🧠 Project Maintainers
 
 - [Curtis Neiderer](mailto:neiderer.c@northeastern.edu)
-- [Divya Maheshkumar](maheshkumar.d@northeastern.edu)
-- [Desiree Reed](reed.des@northeastern.edu)
-- [Minal Ahir](ahir.m@northeastern.edu")
-- [Arundhati Ubhad]("ubhad.a@northeastern.edu")
+- [Divya Maheshkumar](mailto:maheshkumar.d@northeastern.edu)
+- [Desiree Reed](mailto:reed.des@northeastern.edu)
+- [Minal Ahir](mailto:ahir.m@northeastern.edu)
+- [Arundhati Ubhad](mailto:ubhad.a@northeastern.edu)
 - Contributors welcome!
