@@ -17,7 +17,7 @@ Functions:
 # Standard library imports
 from collections import Counter
 from typing import Dict, List
-import logging # Import the logging module
+import logging
 
 # Configure module-specific logger
 logger = logging.getLogger(__name__)
@@ -52,8 +52,12 @@ def generate_most_common_caption(
     """
     logger.debug("Determining and assigning most common caption...")
     if not training_captions_pool:
-        logger.error("The 'training_captions_pool' cannot be empty. Cannot determine a most common caption.")
-        raise ValueError("The 'training_captions_pool' cannot be empty. Cannot determine a most common caption.")
+        logger.error(
+            "The 'training_captions_pool' cannot be empty. Cannot determine a most common caption."
+        )
+        raise ValueError(
+            "The 'training_captions_pool' cannot be empty. Cannot determine a most common caption."
+        )
     if not test_image_ids:
         logger.debug("No test images provided. Returning empty dictionary.")
         return {}
@@ -61,8 +65,10 @@ def generate_most_common_caption(
     caption_counts = Counter(training_captions_pool)
     most_common_caption = caption_counts.most_common(1)[0][0]
 
-    logger.debug(f"Most common caption identified: '{most_common_caption}' (count: {caption_counts.most_common(1)[0][1]})")
-    
+    logger.debug(
+        f"Most common caption identified: '{most_common_caption}' (count: {caption_counts.most_common(1)[0][1]})"
+    )
+
     most_common_assignments = {
         image_id: most_common_caption for image_id in test_image_ids
     }
