@@ -20,6 +20,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.text import Tokenizer
 import tqdm
+import logging
 
 from vtt.evaluation.metrics import (
     compute_bertscore,
@@ -27,6 +28,10 @@ from vtt.evaluation.metrics import (
     compute_meteor_scores,
 )
 from vtt.models.predict import generate_caption_greedy, generate_caption_beam
+
+
+# Configure module-specific logger
+logger = logging.getLogger(__name__)
 
 
 def evaluate_captions(
@@ -63,7 +68,6 @@ def evaluate_captions(
     scores.update(compute_bertscore(single_refs_for_bertscore, raw_candidates))
 
     return scores
-
 
 
 def _evaluate_model_with_generator(
@@ -122,7 +126,7 @@ def evaluate_model_greedy(
         test_dataset=test_dataset,
         references_dict=references_dict,
         max_len=max_len,
-        caption_generator_fn=generate_caption_greedy
+        caption_generator_fn=generate_caption_greedy,
     )
 
 
@@ -144,5 +148,5 @@ def evaluate_model_beam(
         max_len=max_len,
         caption_generator_fn=lambda m, t, f, l: generate_caption_beam(
             m, t, f, l, beam_width=beam_width
-        )
+        ),
     )

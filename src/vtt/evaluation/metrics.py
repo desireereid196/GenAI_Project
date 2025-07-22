@@ -1,5 +1,3 @@
-# vtt/evaluation/metrics.py
-
 """
 metrics.py
 
@@ -25,6 +23,11 @@ import nltk
 import numpy as np
 from nltk.translate.bleu_score import SmoothingFunction, sentence_bleu
 from nltk.translate.meteor_score import meteor_score
+import logging
+
+
+# Configure module-specific logger
+logger = logging.getLogger(__name__)
 
 
 def ensure_nltk_resources():

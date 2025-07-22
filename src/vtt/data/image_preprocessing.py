@@ -13,8 +13,12 @@ from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing import image
 from tqdm import tqdm
+import logging
 
-from vtt.utils.config import IMAGE_SIZE, IMAGENET_MEAN, IMAGENET_STD
+from vtt.config import IMAGE_SIZE, IMAGENET_MEAN, IMAGENET_STD
+
+# Configure module-specific logger
+logger = logging.getLogger(__name__)
 
 
 def preprocess_image(img_path: str) -> np.ndarray:

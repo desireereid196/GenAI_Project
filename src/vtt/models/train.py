@@ -20,8 +20,12 @@ Typical usage:
 """
 
 from typing import Optional
-
 import tensorflow as tf
+import logging
+
+
+# Configure module-specific logger
+logger = logging.getLogger(__name__)
 
 
 def train_model(

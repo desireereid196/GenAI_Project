@@ -11,10 +11,14 @@ overfitting, underfitting, and convergence behavior.
 """
 
 from typing import Sequence, Tuple
-
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from tensorflow.keras.callbacks import History
+import logging
+
+
+# Configure module-specific logger
+logger = logging.getLogger(__name__)
 
 
 def plot_training_history(

@@ -7,6 +7,8 @@ and splitting the processed data into training, validation, and test datasets.
 """
 
 import numpy as np
+import logging
+
 from vtt.data.data_loader import load_split_datasets
 from vtt.data.caption_preprocessing import (
     load_and_clean_captions,
@@ -21,9 +23,18 @@ from vtt.data.caption_preprocessing import (
 from vtt.data.image_preprocessing import (
     extract_features_from_directory,
     save_features,
-    load_features,  # Though imported, not used in this script's main execution flow
+    load_features,
 )
 from vtt.utils.config import END_TOKEN, OOV_TOKEN, START_TOKEN
+
+
+# Configure logging for this script
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
 
 
 def pre_process_images(image_dir: str, output_features_path: str):
@@ -62,39 +73,39 @@ def pre_process_captions(
     print(f"\n--- Starting caption preprocessing from: {captions_path} ---")
 
     # Step 1: Load and clean raw captions (e.g., remove punctuation, convert to lowercase)
-    print("1. Loading and cleaning captions...")
+    print("Loading and cleaning captions...")
     captions_dict = load_and_clean_captions(captions_path)
 
     # Step 2: Filter out rare words and build initial vocabulary
     # min_word_freq=5 means words appearing less than 5 times will be ignored or replaced with OOV_TOKEN
-    print("2. Filtering captions by word frequency (min_word_freq=5)...")
+    print("Filtering captions by word frequency (min_word_freq=5)...")
     filtered_captions, vocab = filter_captions_by_frequency(
         captions_dict, min_word_freq=5
     )
-    print(f"   Vocabulary size after filtering: {len(vocab)}")
+    print(f"\tVocabulary size after filtering: {len(vocab)}")
 
     # Step 3: Fit tokenizer on filtered captions to assign unique IDs to words
     # num_words=10000 limits the tokenizer to the 10,000 most frequent words
-    print("3. Fitting tokenizer on filtered captions (max 10,000 words)...")
+    print("Fitting tokenizer on filtered captions (max 10,000 words)...")
     tokenizer = fit_tokenizer(filtered_captions, num_words=10000)
 
     # Step 4: Convert cleaned captions to sequences of token IDs
-    print("4. Converting captions to sequences of token IDs...")
+    print("Converting captions to sequences of token IDs...")
     seqs = captions_to_sequences(filtered_captions, tokenizer)
 
     # Step 5: Compute max length for padding using 95th percentile
     # This helps ensure most captions fit without excessive padding, and very long
     # outlier captions don't disproportionately affect max_length.
-    print("5. Computing optimal max caption length (95th percentile)...")
+    print("Computing optimal max caption length (95th percentile)...")
     max_length = compute_max_caption_length(seqs, quantile=0.95)
-    print(f"   Calculated max caption length: {max_length}")
+    print(f"\tCalculated max caption length: {max_length}")
 
     # Step 6: Pad all sequences to uniform length
-    print(f"6. Padding sequences to uniform length ({max_length})...")
+    print(f"Padding sequences to uniform length ({max_length})...")
     padded_seqs = pad_caption_sequences(seqs, max_length=max_length)
 
     # Step 7: Save processed data and tokenizer for later use
-    print("7. Saving processed sequences and tokenizer...")
+    print("Saving processed sequences and tokenizer...")
     save_padded_sequences(padded_seqs, padded_caption_sequences_path)
     save_tokenizer(tokenizer, tokenizer_path)
     print(

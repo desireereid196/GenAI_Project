@@ -14,12 +14,15 @@ import json
 import csv
 from collections import Counter, defaultdict
 from typing import Dict, List, Set, Tuple
-
 import numpy as np
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
+import logging
 
-from vtt.utils.config import END_TOKEN, OOV_TOKEN, START_TOKEN
+from vtt.config import END_TOKEN, OOV_TOKEN, START_TOKEN
+
+# Configure module-specific logger
+logger = logging.getLogger(__name__)
 
 
 def clean_caption(text: str) -> str:
