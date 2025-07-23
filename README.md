@@ -77,8 +77,6 @@ GenAI_Project/
 ├── README.md                             # Repository overview and setup.
 ├── pyproject.toml                        # Project configuration file.
 ├── archive                               # Old stuff.
-    ├── scripts/                          # 
-    └── notebooks/                        #
 ├── data/                                 # 
     ├── raw/                              # Raw data.
     └── processed/                        # Cleaned and processed data; tokenizers.
@@ -94,45 +92,36 @@ GenAI_Project/
 ├── notebooks/                            # EDA, Development, and example notebooks.
 ├── outputs/                              # 
     ├── figures/                          # Figures for the report and presentation.
-        ├── eda/                          # Exploratory analysis.
+        ├── eda/                          # Exploratory data analysis.
         └── evaluation/                   # Performance evaluation.
-    └── sample_outputs/                   # Model usage pipeline example outputs. (Milestone 3)
+    └── model_runner_outputs/             # Model usage pipeline example outputs. (Milestone 3)
 ├── scripts/                              # 
     ├── data_runner.py                    # Data pipeline script.
     └── model_runner.py                   # Model usage pipeline example script. (Milestone 3)
 └── src/                                  # Contains the core source code.
-    ├── __init__.py                       #
-    └── vtt/                              # The main package for the project.
-        ├── __init__.py                   #
+    └── vtt/                              # The main package for the vtt project.
         ├── baselines/                    #
-            ├── __init__.py               #
             ├── most_common_caption.py    # Most commmon trainin caption.
             ├── nn_caption.py             # Nearest neighbor image caption.
             └── random_caption.py         # Random training caption.
         ├── config/                       #
-            ├── __init__.py               #
             ├── config.py                 # Project configuration constants and parameters.   
         ├── data/                         #
-            ├── __init__.py               #
             ├── caption_preprocessing.py  # Caption cleaning/tokenization.
             ├── data_loader.py            # Dataset loaders.
             └── image_preprocessing.py    # Image feature extraction.            
         ├── evaluation/                   #
-            ├── __init__.py               #
             ├── evaluate.py               # Evaluation logic for generated captions.
             └── metrics.py                # Core metric functions (BLEU, METEOR, BERTScore, etc.)
         ├── models/                       #
-            ├── __init__.py               #
             ├── decoder.py                # Model architecture definitions.
             ├── io.py                     # Model saving and loading.                 
             ├── predict.py                # Caption generation from trained model.
             └── train.py                  # Model training logic (training loop, checkpoint saving, etc.)
         ├── utils/                        # 
-            ├── __init__.py               #
             ├── config.py                 # Project configuration and dependencies.
             └── helpers.py                # Shared helper and utility functions.
         └── visualization/                #
-            ├── __init__.py               #
             └── history_plot.py           # Training history plot.
 ```
 
@@ -203,7 +192,7 @@ This section guides you through executing the core model pipeline to generate pr
 1. **Repository Clone:** Ensure you have cloned this repository to your local machine.
 2. **Environment Setup:** Follow the detailed [setup instructions](#-setup) to create and activate your Python environment, ensuring the `vtt` package and all its dependencies are correctly installed.
 
-### Execution Steps
+### 🚀 Execution Steps
 
 1. **Activate Environment:** Open a new terminal or command prompt and activate the Python environment you created during setup.
 
@@ -230,23 +219,23 @@ Upon successful execution, the `model_runner.py` script will:
 - Load the preprocessed Flickr8k dataset.
 - Load the selected pretrained generative model (e.g., an encoder-decoder model).
 - Run inference on a small batch of 10 representative samples from the dataset.
-- Save the generated sample captions to the `./outputs/model_runner_outputs/` directory. You should find text files or other relevant output formats containing the generated captions.
+- Save the generated sample captions to the `./outputs/model_runner_outputs/` directory. You should image files with captions added as well as a text file listing the generated captions for each image.
 
 This demonstrates the full pipeline, from input data to generated output, showcasing the model's ability to produce captions. The focus at this stage is on demonstrating a functional system, not necessarily on perfecting the output quality.
 
 ## 📄 License
 
-MIT License — feel free to use, share, and modify.
+[MIT License](./LICENSE) — feel free to use, share, and modify.
 
 ## 🤝 Contributing
 
-Pull requests welcome! For major changes, please open an issue first to discuss what you’d like to change.
+Pull requests welcome! For major changes, please [open an issue](https://github.com/cneiderer/GenAI_Project/issues) first to discuss what you would like to change.
 
 ## 🧠 Project Maintainers
 
-- [Curtis Neiderer](mailto:neiderer.c@northeastern.edu)
-- [Divya Maheshkumar](mailto:maheshkumar.d@northeastern.edu)
-- [Desiree Reed](mailto:reed.des@northeastern.edu)
-- [Minal Ahir](mailto:ahir.m@northeastern.edu)
-- [Arundhati Ubhad](mailto:ubhad.a@northeastern.edu)
+- Curtis Neidererer: [@curtisn](https://github.com/curtisn) · [neiderer.c@northeastern.edu](mailto:neiderer.c@northeastern.edu)
+- Divya Maheshkumar: [@DivyaMaheshkumar](https://github.com/DivyaMaheshkumar) · [maheshkumar.d@northeastern.edu](mailto:maheshkumar.d@northeastern.edu)
+- Desiree Reid: [@desireereid196](https://github.com/desireereid196) · [reed.des@northeastern.edu](mailto:reed.des@northeastern.edu)
+- Minal Ahir: [@mahir310](https://github.com/mahir310) · [ahir.m@northeastern.edu](mailto:ahir.m@northeastern.edu)
+- Arundhati Ubhad: [@ArundhatiU](https://github.com/ArundhatiU) · [ubhad.a@northeastern.edu](mailto:ubhad.a@northeastern.edu)
 - Contributors welcome!
