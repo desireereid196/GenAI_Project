@@ -84,10 +84,10 @@ GenAI_Project/
     ├── milestones/                       # Project milestones.
     └── literature_review/                # Background info and relevant papers.
 ├── experiments/                          # Formal experiments.
-    ├── experiment_1.ipynb                # Baseline Training and Evaluation. 
-    ├── experiment_2.ipynb                # Error Analysis. 
-    ├── experiment_3.ipynb                # Semantic Fidelity Comparison. 
-    └── experiment_4.ipynb                # Generalization. 
+    ├── experiment_1/                     # Baseline Training and Evaluation. 
+    ├── experiment_2/                     # Error Analysis. 
+    ├── experiment_3/                     # Semantic Fidelity Comparison. 
+    └── experiment_4/                     # Generalization. 
 ├── models/                               # Trained models and weights.       
 ├── notebooks/                            # EDA, Development, and example notebooks.
 ├── outputs/                              # 
