@@ -93,8 +93,7 @@ def _evaluate_model_with_generator(
         tqdm_bar = tqdm.tqdm(test_dataset, total=total_batches, desc="Evaluating")
 
         for batch in tqdm_bar:
-            (input_features_tuple, _) = batch
-            (img_tensor, _, image_ids) = input_features_tuple
+            (img_tensor, _),_, image_ids = batch
 
             for i in range(len(image_ids)):
                 image_id = image_ids[i].numpy().decode("utf-8")
