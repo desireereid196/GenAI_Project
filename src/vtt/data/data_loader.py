@@ -281,3 +281,73 @@ def load_split_datasets(
 
     logger.info("TensorFlow datasets created and configured.")
     return (train_ds, val_ds, test_ds)
+
+
+def load_full_dataset(
+    features_path: str,
+    captions_path: str,
+    batch_size: int = 32,
+    shuffle: bool = True,
+    buffer_size: int = 1000,
+    seed: Optional[int] = 42,
+    cache: bool = False,
+    return_numpy: bool = False,
+) -> Union[
+    tf.data.Dataset,
+    Tuple[np.ndarray, np.ndarray, List[str]],
+]:
+    """
+    Load preprocessed image features and caption sequences without splitting.
+
+    Returns either a full TensorFlow dataset or raw NumPy arrays/lists.
+
+    Args:
+        features_path (str): Path to the .npz file containing image features.
+        captions_path (str): Path to the .npz file containing padded caption sequences.
+        batch_size (int): Batch size for TensorFlow dataset.
+        shuffle (bool): Whether to shuffle the data.
+        buffer_size (int): Shuffle buffer size.
+        seed (Optional[int]): Random seed.
+        cache (bool): Whether to cache the dataset in memory.
+        return_numpy (bool): Whether to return NumPy arrays and lists.
+
+    Returns:
+        Union[tf.data.Dataset, Tuple[np.ndarray, np.ndarray, List[str]]]:
+            Full dataset either as a TensorFlow Dataset or NumPy arrays.
+    """
+    logger.info("Loading full dataset without splitting...")
+
+    image_features, caption_sequences, image_ids = load_features_and_sequences(
+        features_path, captions_path
+    )
+
+    assert (
+        len(image_features) == len(caption_sequences) == len(image_ids)
+    ), "Mismatch in lengths of image features, caption sequences, or image IDs."
+
+    if shuffle:
+        logger.info(f"Shuffling data with seed: {seed}")
+        rng = np.random.default_rng(seed)
+        idx = rng.permutation(len(image_features))
+        image_features = image_features[idx]
+        caption_sequences = caption_sequences[idx]
+        image_ids = [image_ids[i] for i in idx]
+
+    if return_numpy:
+        logger.info("Returning dataset as NumPy arrays and lists.")
+        return image_features, caption_sequences, image_ids
+
+    logger.info("Creating TensorFlow tf.data.Dataset for full data.")
+
+    ds = tf.data.Dataset.from_tensor_slices((image_features, caption_sequences, image_ids))
+    ds = prepare_dataset(ds)
+
+    if cache:
+        ds = ds.cache()
+    if shuffle:
+        ds = ds.shuffle(buffer_size=buffer_size)
+
+    ds = ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+
+    logger.info("TensorFlow dataset created.")
+    return ds
