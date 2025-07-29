@@ -1,6 +1,8 @@
 """
-Script: evaluation_sheet_generator.py
+Script: evaluation_sheet_generator_v2.py
 Description: Generates an Excel spreadsheet for human evaluation of image captions.
+             Randomly selects between greedy and beam search caption generation.
+             The 'Generation Method' column is now hidden by default.
 """
 
 import os
@@ -17,10 +19,11 @@ from vtt.data.caption_preprocessing import load_and_clean_captions, load_tokeniz
 from vtt.config import START_TOKEN, END_TOKEN
 from vtt.utils import set_seed
 from vtt.data.data_loader import load_split_datasets
-from vtt.models.predict import generate_caption_greedy
+from vtt.models.predict import generate_caption_greedy, generate_caption_beam
 from vtt.models.decoder import build_decoder_model
 from PIL import Image as PILImage
 import tensorflow as tf
+
 
 # --- Logging Setup ---
 logging.basicConfig(
@@ -37,6 +40,8 @@ def main():
     set_seed(42)
     # Set number of evaluation samples to include
     NUM_EVAL_SAMPLES = 100
+    # Define beam width for beam search (can be adjusted)
+    BEAM_WIDTH = 5
 
     current_script_dir, project_root, data_dir, processed_dir, raw_dir, model_dir = (
         get_project_paths()
@@ -50,7 +55,7 @@ def main():
     captions_npz = os.path.join(processed_dir, "flickr8k_padded_caption_sequences.npz")
     tokenizer_path = os.path.join(processed_dir, "flickr8k_tokenizer.json")
     model_weights = os.path.join(model_dir, "flickr8k_decoder_weights.weights.h5")
-    output_file = os.path.join(current_script_dir, "human_evaluation_sheet.xlsx")
+    output_file = os.path.join(current_script_dir, "human_evaluation_sheet_v2.xlsx")
 
     model, tokenizer, max_len = load_model_and_tokenizer(
         tokenizer_path, model_weights, features_npz, captions_npz
@@ -64,8 +69,15 @@ def main():
     selected_ids, selected_features = select_evaluation_samples(
         test_ids, test_features, NUM_EVAL_SAMPLES
     )
+
     evaluation_data = generate_evaluation_data(
-        selected_ids, selected_features, model, tokenizer, max_len, captions_map
+        selected_ids,
+        selected_features,
+        model,
+        tokenizer,
+        max_len,
+        captions_map,
+        BEAM_WIDTH,
     )
 
     create_evaluation_spreadsheet(image_dir, evaluation_data, output_file)
@@ -117,7 +129,7 @@ def load_model_and_tokenizer(
 
 def select_evaluation_samples(image_ids: List[str], image_features, num_samples: int):
     if len(image_ids) > num_samples:
-        logger.info(f"Selecting {num_samples} random samples from test...")
+        logger.info(f"Selecting {num_samples} random samples...")
         indices = random.sample(range(len(image_ids)), num_samples)
         return [image_ids[i] for i in indices], image_features[indices]
     else:
@@ -126,9 +138,15 @@ def select_evaluation_samples(image_ids: List[str], image_features, num_samples:
 
 
 def generate_evaluation_data(
-    image_ids, image_features, model, tokenizer, max_len, captions_map
+    image_ids, image_features, model, tokenizer, max_len, captions_map, beam_width: int
 ):
     data = []
+    # Define generation methods and their names
+    generation_methods = [
+        (generate_caption_greedy, "Greedy"),
+        (generate_caption_beam, "Beam Search"),
+    ]
+
     for i, img_id in tqdm(
         enumerate(image_ids), total=len(image_ids), desc="Generating Captions"
     ):
@@ -136,7 +154,16 @@ def generate_evaluation_data(
         gt_caption = random.choice(gt_list) if gt_list else "N/A"
         gt_caption = gt_caption.replace(START_TOKEN, "").replace(END_TOKEN, "").strip()
 
-        caption = generate_caption_greedy(model, tokenizer, image_features[i], max_len)
+        # Randomly choose a generation method
+        chosen_method_func, method_name = random.choice(generation_methods)
+
+        if method_name == "Greedy":
+            caption = chosen_method_func(model, tokenizer, image_features[i], max_len)
+        else:  # Beam Search
+            caption = chosen_method_func(
+                model, tokenizer, image_features[i], max_len, beam_width
+            )
+
         caption = caption.replace(START_TOKEN, "").replace(END_TOKEN, "").strip()
 
         data.append(
@@ -144,6 +171,7 @@ def generate_evaluation_data(
                 "image_file": img_id,
                 "ground_truth_caption": gt_caption,
                 "generated_caption": caption,
+                "generation_method": method_name,
             }
         )
     return data
@@ -178,16 +206,17 @@ def create_evaluation_spreadsheet(
     ws = wb.active
     ws.title = "Image Captions Evaluation"
 
-    # Define headers
+    # Important: The order of headers determines column letters
     headers = [
         "Image",
-        "Image Filename",  # New column
+        "Image Filename",
         "Ground Truth Caption",
         "Generated Caption (Model)",
         "Adequacy (1-5)",
         "Fluency (1-5)",
         "Overall Quality (1-5)",
         "Comments",
+        "Generation Method",
     ]
     ws.append(headers)
 
@@ -196,13 +225,23 @@ def create_evaluation_spreadsheet(
         cell = ws.cell(row=1, column=i)
         cell.font = bold_font
 
-    # Set column widths
-    column_widths = [40, 30, 40, 40, 20, 20, 20, 40]
-    # Use column letters corresponding to the new header layout
+    # Define column widths
+    column_widths = [
+        40,  # Image(A)
+        30,  # Filename(B)
+        40,  # Ground Truth(C)
+        40,  # Generated(D)
+        20,  # Adequacy(E)
+        20,  # Fluency(F)
+        20,  # Overall Quality(G)
+        40,  # Comments(H)
+        20,  # Generation Method(I)
+    ]
     for col_idx, width in enumerate(column_widths):
-        # openpyxl uses 1-based indexing for columns (A=1, B=2, etc.)
-        # chr(65 + col_idx) converts 0->A, 1->B etc.
         ws.column_dimensions[chr(65 + col_idx)].width = width
+
+    ws.column_dimensions["I"].hidden = True
+    logger.info("Column 'Generation Method' (I) has been set to hidden.")
 
     dv = DataValidation(
         type="whole",
@@ -228,19 +267,19 @@ def create_evaluation_spreadsheet(
         try:
             img = resize_image_for_excel(image_path)
             ws.row_dimensions[row].height = img.height / 0.75
-            ws.add_image(img, f"A{row}")  # Image still in Column A
+            ws.add_image(img, f"A{row}")
 
             ws[f"B{row}"].value = item["image_file"]
-
             ws[f"C{row}"].value = item["ground_truth_caption"]
             ws[f"D{row}"].value = item["generated_caption"]
-            ws[f"H{row}"].value = ""
+            ws[f"I{row}"].value = item["generation_method"]
+            ws[f"H{row}"].value = ""  # Comments column
 
-            # Apply text wrapping
-            for col in "BCDH":
+            # Apply text wrapping for appropriate columns
+            for col in "BCDHI":  # B, C, D (text), H (comments), I (generation method)
                 ws[f"{col}{row}"].alignment = Alignment(wrapText=True, vertical="top")
 
-            # Apply data validation to the rating columns
+            # Apply data validation for rating columns (E, F, G)
             for col in "EFG":
                 ws[f"{col}{row}"] = ""  # Initialize empty
                 dv.add(f"{col}{row}")
