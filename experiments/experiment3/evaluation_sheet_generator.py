@@ -55,7 +55,7 @@ def main():
     captions_npz = os.path.join(processed_dir, "flickr8k_padded_caption_sequences.npz")
     tokenizer_path = os.path.join(processed_dir, "flickr8k_tokenizer.json")
     model_weights = os.path.join(model_dir, "flickr8k_decoder_weights.weights.h5")
-    output_file = os.path.join(current_script_dir, "human_evaluation_sheet_v2.xlsx")
+    output_file = os.path.join(current_script_dir, "human_evaluation_sheet.xlsx")
 
     model, tokenizer, max_len = load_model_and_tokenizer(
         tokenizer_path, model_weights, features_npz, captions_npz
@@ -200,7 +200,7 @@ def resize_image_for_excel(
 
 
 def create_evaluation_spreadsheet(
-    image_dir, captions_data, output_filename="human_evaluation.xlsx"
+    image_dir, captions_data, output_filename="human_evaluation_sheet.xlsx"
 ):
     wb = Workbook()
     ws = wb.active
