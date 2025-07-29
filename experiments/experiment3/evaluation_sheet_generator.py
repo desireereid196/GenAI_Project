@@ -1,6 +1,8 @@
 """
-Script: experiment3_evaluation_sheet_generator.py
+Script: evaluation_sheet_generator_v2.py
 Description: Generates an Excel spreadsheet for human evaluation of image captions.
+             Randomly selects between greedy and beam search caption generation.
+             The 'Generation Method' column is now hidden by default.
 """
 
 import os
@@ -17,10 +19,11 @@ from vtt.data.caption_preprocessing import load_and_clean_captions, load_tokeniz
 from vtt.config import START_TOKEN, END_TOKEN
 from vtt.utils import set_seed
 from vtt.data.data_loader import load_split_datasets
-from vtt.models.predict import generate_caption_greedy
+from vtt.models.predict import generate_caption_greedy, generate_caption_beam
 from vtt.models.decoder import build_decoder_model
 from PIL import Image as PILImage
 import tensorflow as tf
+
 
 # --- Logging Setup ---
 logging.basicConfig(
@@ -31,12 +34,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# === Main ===
+# --- Main ---
 def main():
     # Set random seed for repeatability
     set_seed(42)
     # Set number of evaluation samples to include
     NUM_EVAL_SAMPLES = 100
+    # Define beam width for beam search (can be adjusted)
+    BEAM_WIDTH = 5
 
     current_script_dir, project_root, data_dir, processed_dir, raw_dir, model_dir = (
         get_project_paths()
@@ -64,16 +69,23 @@ def main():
     selected_ids, selected_features = select_evaluation_samples(
         test_ids, test_features, NUM_EVAL_SAMPLES
     )
+
     evaluation_data = generate_evaluation_data(
-        selected_ids, selected_features, model, tokenizer, max_len, captions_map
+        selected_ids,
+        selected_features,
+        model,
+        tokenizer,
+        max_len,
+        captions_map,
+        BEAM_WIDTH,
     )
 
     create_evaluation_spreadsheet(image_dir, evaluation_data, output_file)
     logger.info("--- Evaluation Sheet Generation Complete ---")
 
 
-# === Helper Functions ===
-def get_project_paths() -> Tuple[str, str, str, str, str]:
+# --- Helper Functions ---
+def get_project_paths() -> Tuple[str, str, str, str, str, str]:
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, "..", ".."))
     data_dir = os.path.join(project_root, "data")
@@ -126,9 +138,15 @@ def select_evaluation_samples(image_ids: List[str], image_features, num_samples:
 
 
 def generate_evaluation_data(
-    image_ids, image_features, model, tokenizer, max_len, captions_map
+    image_ids, image_features, model, tokenizer, max_len, captions_map, beam_width: int
 ):
     data = []
+    # Define generation methods and their names
+    generation_methods = [
+        (generate_caption_greedy, "Greedy"),
+        (generate_caption_beam, "Beam Search"),
+    ]
+
     for i, img_id in tqdm(
         enumerate(image_ids), total=len(image_ids), desc="Generating Captions"
     ):
@@ -136,7 +154,16 @@ def generate_evaluation_data(
         gt_caption = random.choice(gt_list) if gt_list else "N/A"
         gt_caption = gt_caption.replace(START_TOKEN, "").replace(END_TOKEN, "").strip()
 
-        caption = generate_caption_greedy(model, tokenizer, image_features[i], max_len)
+        # Randomly choose a generation method
+        chosen_method_func, method_name = random.choice(generation_methods)
+
+        if method_name == "Greedy":
+            caption = chosen_method_func(model, tokenizer, image_features[i], max_len)
+        else:  # Beam Search
+            caption = chosen_method_func(
+                model, tokenizer, image_features[i], max_len, beam_width
+            )
+
         caption = caption.replace(START_TOKEN, "").replace(END_TOKEN, "").strip()
 
         data.append(
@@ -144,6 +171,7 @@ def generate_evaluation_data(
                 "image_file": img_id,
                 "ground_truth_caption": gt_caption,
                 "generated_caption": caption,
+                "generation_method": method_name,
             }
         )
     return data
@@ -172,20 +200,23 @@ def resize_image_for_excel(
 
 
 def create_evaluation_spreadsheet(
-    image_dir, captions_data, output_filename="human_evaluation.xlsx"
+    image_dir, captions_data, output_filename="human_evaluation_sheet.xlsx"
 ):
     wb = Workbook()
     ws = wb.active
     ws.title = "Image Captions Evaluation"
 
+    # Important: The order of headers determines column letters
     headers = [
-        "Image",
-        "Ground Truth Caption",
-        "Generated Caption (Model)",
-        "Adequacy (1-5)",
-        "Fluency (1-5)",
-        "Overall Quality (1-5)",
-        "Comments",
+        "Image",  # A
+        "Image Filename",  # B
+        "Generated Caption (Model)",  # C
+        "Adequacy (1-5)",  # D
+        "Fluency (1-5)",  # E
+        "Overall Quality (1-5)",  # F
+        "Comments",  # G
+        "Generation Method",  # H
+        "Ground Truth Caption",  # I
     ]
     ws.append(headers)
 
@@ -194,9 +225,20 @@ def create_evaluation_spreadsheet(
         cell = ws.cell(row=1, column=i)
         cell.font = bold_font
 
-    column_widths = [40, 40, 40, 20, 20, 20, 40]
-    for col, width in zip("ABCDEFG", column_widths):
-        ws.column_dimensions[col].width = width
+    # Define column widths
+    column_widths = [
+        40,  # Image(A)
+        30,  # Filename(B)
+        40,  # Generated(C)
+        20,  # Adequacy(D)
+        20,  # Fluency(E)
+        20,  # Overall Quality(F)
+        40,  # Comments(G)
+        20,  # Generation Method(H)
+        40,  # Ground Truth(I)
+    ]
+    for col_idx, width in enumerate(column_widths):
+        ws.column_dimensions[chr(65 + col_idx)].width = width
 
     dv = DataValidation(
         type="whole",
@@ -211,7 +253,6 @@ def create_evaluation_spreadsheet(
         promptTitle="Rating",
         prompt="Enter a number from 1 to 5",
     )
-    ws.add_data_validation(dv)
 
     row = 2
     for item in captions_data:
@@ -225,15 +266,23 @@ def create_evaluation_spreadsheet(
             ws.row_dimensions[row].height = img.height / 0.75
             ws.add_image(img, f"A{row}")
 
-            ws[f"B{row}"].value = item["ground_truth_caption"]
+            ws[f"B{row}"].value = item["image_file"]
             ws[f"C{row}"].value = item["generated_caption"]
-            ws[f"G{row}"].value = ""
+            ws[f"D{row}"].value = ""  # Adequacy
+            ws[f"E{row}"].value = ""  # Fluency
+            ws[f"F{row}"].value = ""  # Overall Quality
+            ws[f"G{row}"].value = ""  # Comments
+            ws[f"H{row}"].value = item["generation_method"]
+            ws.column_dimensions["H"].hidden = True
+            ws[f"I{row}"].value = item["ground_truth_caption"]
+            ws.column_dimensions["I"].hidden = True
 
-            for col in "BCG":
+            # Apply text wrapping for appropriate columns
+            for col in "BCGHI":
                 ws[f"{col}{row}"].alignment = Alignment(wrapText=True, vertical="top")
 
+            # Apply data validation for rating columns (D, E, F)
             for col in "DEF":
-                ws[f"{col}{row}"] = ""
                 dv.add(f"{col}{row}")
 
             row += 1
