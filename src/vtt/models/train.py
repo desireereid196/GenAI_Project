@@ -43,8 +43,8 @@ def train_model(
     then fits the model using optional early stopping and checkpointing.
 
     Args:
-        dataset (tf.data.Dataset): Training data yielding
-            ((image_tensor, input_caption_tensor, image_id), target_caption_tensor).
+        dataset (tf.data.Dataset): Training data yielding 3-tuples
+            ((image_tensor, input_caption_tensor), target_caption_tensor, image_id).
         model (tf.keras.Model): A compiled Keras model (e.g., ImageCaptionDecoder).
         epochs (int): Number of epochs to train. Defaults to 10.
         checkpoint_path (str): Path to save the best model weights.
@@ -57,14 +57,15 @@ def train_model(
     """
 
     # Dummy call to build model (eager mode)
-    for dummy_inputs, _ in dataset.take(1):
-        dummy_img, dummy_caption, _ = dummy_inputs  # Discard image_id
+    for dummy_inputs, _ ,_ in dataset.take(1):
+        dummy_img, dummy_caption  = dummy_inputs  # Discard image_id
         model((dummy_img, dummy_caption), training=False)
         break
 
     # Define a function to strip image_id from each batch
-    def strip_image_id(inputs, target):
-        image_tensor, input_caption, _ = inputs
+    def strip_image_id(inputs, target, imgage_id):
+        #image_tensor, input_caption, _ = inputs
+        image_tensor, input_caption = inputs
         return (image_tensor, input_caption), target
 
     # Apply mapping to strip image_id from dataset
@@ -73,7 +74,6 @@ def train_model(
         val_dataset = val_dataset.map(
             strip_image_id, num_parallel_calls=tf.data.AUTOTUNE
         )
-
     # Define callbacks
     monitor_metric = "val_loss" if val_dataset else "loss"
     callbacks = [
