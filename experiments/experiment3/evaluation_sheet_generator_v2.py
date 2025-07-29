@@ -208,15 +208,15 @@ def create_evaluation_spreadsheet(
 
     # Important: The order of headers determines column letters
     headers = [
-        "Image",
-        "Image Filename",
-        "Ground Truth Caption",
-        "Generated Caption (Model)",
-        "Adequacy (1-5)",
-        "Fluency (1-5)",
-        "Overall Quality (1-5)",
-        "Comments",
-        "Generation Method",
+        "Image",  # A
+        "Image Filename",  # B
+        "Generated Caption (Model)",  # C
+        "Adequacy (1-5)",  # D
+        "Fluency (1-5)",  # E
+        "Overall Quality (1-5)",  # F
+        "Comments",  # G
+        "Generation Method",  # H
+        "Ground Truth Caption",  # I
     ]
     ws.append(headers)
 
@@ -229,19 +229,16 @@ def create_evaluation_spreadsheet(
     column_widths = [
         40,  # Image(A)
         30,  # Filename(B)
-        40,  # Ground Truth(C)
-        40,  # Generated(D)
-        20,  # Adequacy(E)
-        20,  # Fluency(F)
-        20,  # Overall Quality(G)
-        40,  # Comments(H)
-        20,  # Generation Method(I)
+        40,  # Generated(C)
+        20,  # Adequacy(D)
+        20,  # Fluency(E)
+        20,  # Overall Quality(F)
+        40,  # Comments(G)
+        20,  # Generation Method(H)
+        40,  # Ground Truth(I)
     ]
     for col_idx, width in enumerate(column_widths):
         ws.column_dimensions[chr(65 + col_idx)].width = width
-
-    ws.column_dimensions["I"].hidden = True
-    logger.info("Column 'Generation Method' (I) has been set to hidden.")
 
     dv = DataValidation(
         type="whole",
@@ -270,18 +267,22 @@ def create_evaluation_spreadsheet(
             ws.add_image(img, f"A{row}")
 
             ws[f"B{row}"].value = item["image_file"]
-            ws[f"C{row}"].value = item["ground_truth_caption"]
-            ws[f"D{row}"].value = item["generated_caption"]
-            ws[f"I{row}"].value = item["generation_method"]
-            ws[f"H{row}"].value = ""  # Comments column
+            ws[f"C{row}"].value = item["generated_caption"]
+            ws[f"D{row}"].value = ""  # Adequacy
+            ws[f"E{row}"].value = ""  # Fluency
+            ws[f"F{row}"].value = ""  # Overall Quality
+            ws[f"G{row}"].value = ""  # Comments
+            ws[f"H{row}"].value = item["generation_method"]
+            ws.column_dimensions["H"].hidden = True
+            ws[f"I{row}"].value = item["ground_truth_caption"]
+            ws.column_dimensions["I"].hidden = True
 
             # Apply text wrapping for appropriate columns
-            for col in "BCDHI":  # B, C, D (text), H (comments), I (generation method)
+            for col in "BCGHI":
                 ws[f"{col}{row}"].alignment = Alignment(wrapText=True, vertical="top")
 
-            # Apply data validation for rating columns (E, F, G)
-            for col in "EFG":
-                ws[f"{col}{row}"] = ""  # Initialize empty
+            # Apply data validation for rating columns (D, E, F)
+            for col in "DEF":
                 dv.add(f"{col}{row}")
 
             row += 1
